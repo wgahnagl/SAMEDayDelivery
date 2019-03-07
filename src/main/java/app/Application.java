@@ -102,5 +102,3 @@ public class Application {
                         addVisit("null")));
     }
 }
-
-//mondi was here
