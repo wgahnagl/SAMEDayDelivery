@@ -29,7 +29,7 @@ public class Application {
 
         try {
             // STEP 1: Register JDBC driver
-            Class.forName(JDBC_DRIVER); // No clue what this does --Evan
+            Class.forName(JDBC_DRIVER); // Loads the org.h2.Driver class so that it "registers" itself
 
             // STEP 2: Open a connection
             System.out.println("Connecting to the database...");
