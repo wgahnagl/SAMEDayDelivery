@@ -1,9 +1,6 @@
 package app;
 
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.SQLException;
-import java.sql.Statement;
+import java.sql.*;
 
 /**
  * Created by evan on 3/20/19.
@@ -83,12 +80,54 @@ public class DBLiason {
      * the graphical UI and the command-line UI.
      */
 
+    // Get the SQL statement used by the liason.
+    // Added by Evan 20 Mar 2019. I have no idea if this is a good way to design this,
+    // but it will at least work for now. ("now" = when we're just feeling out the basic
+    // design of our application)
 
+    public static Statement getStatement() {
+        return statement;
+    }
+
+    // Return a String of a newline-separated list of all the packages in the DB
+    // (Consider generalizing this method into a prettyTable method where you pass
+    //  it something like ("Package [%d] from %s to %s", "ID", "fromCustomer", "toCustomer"))
+    public static String prettyPackageList() {
+        try {
+            String result = "";
+            ResultSet packages = statement.executeQuery("select ID, shiptime from package");
+
+            while(packages.next()) {
+                int nextID = packages.getInt("ID");
+                String nextShipTime = packages.getTimestamp("shiptime").toString();
+
+                result += String.format("Package %d. Ship time: %s\n", nextID, nextShipTime);
+            }
+
+            return result;
+
+        } catch(SQLException sqle) {
+            sqle.printStackTrace();
+            return "<SQL error>";
+        }
+    }
 
 
     /* Main method for testing only */
 
     public static void main(String[] args) {
         setupDB();
+
+        try {
+            Statement stmt = DBLiason.getStatement();
+            stmt.execute("insert into package values (1, d'2019-03-20')");
+            stmt.execute("insert into package values (3, ts'2019-01-04 12:34:10')");
+            //stmt.execute("insert into package values (3, ts'2019-02-12 09:12:14')"); // This should fail
+        } catch(SQLException sqle) {
+            sqle.printStackTrace();
+        }
+
+        System.out.println("PACKAGE TABLE PRINTOUT:");
+        System.out.println(prettyPackageList());
     }
 }
