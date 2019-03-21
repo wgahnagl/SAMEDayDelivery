@@ -1,5 +1,10 @@
 package app;
 
+import java.io.BufferedReader;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
+import java.nio.Buffer;
 import java.sql.*;
 
 /**
@@ -74,6 +79,30 @@ public class DBLiason {
                 ");");
     }
 
+    // Helper method to populate a table from a
+    private static void populateTableFromCSV(String tablename, String filename) {
+        BufferedReader reader;
+
+        try {
+            reader = new BufferedReader( new FileReader(filename)); // FileNotFouneException
+
+            String line;
+            while( (line = reader.readLine()) != null) { // IOException
+                if(line.trim().startsWith("//")) continue; // Allow the CSV to comment out lines with "//"
+                statement.execute( String.format( "insert into %s values (%s);", tablename, line) ); // SQLException
+            }
+
+        } catch(FileNotFoundException fnfe) {
+            fnfe.printStackTrace();
+            return;
+        } catch(IOException ioe) {
+            ioe.printStackTrace();
+            return;
+        } catch(SQLException sqle) {
+            sqle.printStackTrace();
+        }
+    }
+
 
     /* General-purpose DB-accessing methods.
      * Use these to implement all the different functionality that is shared between
@@ -118,14 +147,7 @@ public class DBLiason {
     public static void main(String[] args) {
         setupDB();
 
-        try {
-            Statement stmt = DBLiason.getStatement();
-            stmt.execute("insert into package values (1, d'2019-03-20')");
-            stmt.execute("insert into package values (3, ts'2019-01-04 12:34:10')");
-            //stmt.execute("insert into package values (3, ts'2019-02-12 09:12:14')"); // This should fail
-        } catch(SQLException sqle) {
-            sqle.printStackTrace();
-        }
+        populateTableFromCSV("package", "Phase 2/test_csv");
 
         System.out.println("PACKAGE TABLE PRINTOUT:");
         System.out.println(prettyPackageList());
