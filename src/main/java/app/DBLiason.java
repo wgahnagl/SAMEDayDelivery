@@ -62,6 +62,7 @@ public class DBLiason {
 
         try {
             /* Systematically destroy and then re-create every table in the database */
+            setupCustomerTable();
             setupPackageTable();
 
         } catch(SQLException sqle) {
@@ -72,11 +73,40 @@ public class DBLiason {
     }
 
     private static void setupPackageTable() throws SQLException {
-        statement.execute("drop table package;");
+        statement.execute("drop table package if exists;");
         statement.execute("create table package (" +
-                "ID int primary key," +
-                "shiptime timestamp" +
+                "ID                   int primary key," +
+
+                "price                numeric(6,2), " + // Price in dollars, up to $9999 and accurate to the cent
+
+                "origin_customer_id   int," +     // origin_customer_id and dest_customer_id are both
+                "dest_customer_id     int," +     // foreign keys to the customer table (this constraint is declared below)
+
+                "ship_timestamp       timestamp," +
+                "delivery_timestamp   timestamp," +
+                "expected_delivery    timestamp," +
+
+                "size                 varchar(16)," +
+                "type                 varchar(16)," +
+                "weight               numeric(7,3)," + // Weight in kilograms, up to 9999 kg and accurate to the gram
+
+                "foreign key (origin_customer_id) references customer(id)," +
+                "foreign key (dest_customer_id) references customer(id)" +
+
                 ");");
+    }
+
+    private static void setupCustomerTable() throws SQLException {
+        statement.execute("drop table customer if exists;");
+        statement.execute("create table customer (" +
+                "ID int primary key," +
+                "name varchar(255)," +
+                "addr_line1 varchar(1024)," + // You wouldn't think addresses could get this long, but they can.
+                "city varchar(255)," +
+                "province varchar(255)," + // When the country is "USA", the province is the state
+                "country varchar(255)," +
+                ");"
+        );
     }
 
     // Helper method to populate a table from a
@@ -124,7 +154,7 @@ public class DBLiason {
     public static String prettyPackageList() {
         try {
             String result = "";
-            ResultSet packages = statement.executeQuery("select ID, shiptime from package");
+            ResultSet packages = statement.executeQuery("select ID, ship_timestamp from package");
 
             while(packages.next()) {
                 int nextID = packages.getInt("ID");
@@ -147,7 +177,7 @@ public class DBLiason {
     public static void main(String[] args) {
         setupDB();
 
-        populateTableFromCSV("package", "Phase 2/test_csv");
+        //populateTableFromCSV("package", "Phase 2/test_csv");
 
         System.out.println("PACKAGE TABLE PRINTOUT:");
         System.out.println(prettyPackageList());
