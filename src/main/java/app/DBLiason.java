@@ -100,26 +100,86 @@ public class DBLiason {
         statement.execute("drop table customer if exists;");
         statement.execute("create table customer (" +
                 "ID int primary key," +
+
                 "name varchar(255)," +
+                "email varchar(255)," +
+
                 "addr_line1 varchar(1024)," + // You wouldn't think addresses could get this long, but they can.
                 "city varchar(255)," +
                 "province varchar(255)," + // When the country is "USA", the province is the state
+                "zipcode int," + // Not really an int a guess (more like a string) but I don't know what the length limit is
                 "country varchar(255)," +
                 ");"
         );
+
+        populateTableFromCSV("customer", "Phase 2/customer.csv", "%1, '%2', '%3', '%4', '%5', '%6', %7, '%8'");
     }
 
-    // Helper method to populate a table from a
-    private static void populateTableFromCSV(String tablename, String filename) {
+    // Helper method to populate a table from a CSV file
+    // If reformat parameter is specified, it should look something like "%1, %2, (%3), '%4'"
+    // The elements from each line of the CSV will be slotted into the %n symbols
+    private static void populateTableFromCSV(String tablename, String filename, String reformat) {
         BufferedReader reader;
 
         try {
-            reader = new BufferedReader( new FileReader(filename)); // FileNotFouneException
+            reader = new BufferedReader( new FileReader(filename)); // FileNotFoundException
 
-            String line;
+            String line;   // Line read from the CSV
+            String values; // Values plugged into the table (identical to line unless reformat is specified)
+
             while( (line = reader.readLine()) != null) { // IOException
-                if(line.trim().startsWith("//")) continue; // Allow the CSV to comment out lines with "//"
-                statement.execute( String.format( "insert into %s values (%s);", tablename, line) ); // SQLException
+
+                // Allow the CSV to comment out lines with "//"
+                if(line.trim().startsWith("//"))
+                    continue;
+
+                // If specified, apply the format string
+                if(!reformat.equals("")) {
+
+                    values = reformat;
+                    String[] lineparts = line.split(",");
+
+                    // Any value containing a single quote needs to have it escaped. H2 evaluates '' to '
+                    // Please ignore the way I escape them, it took me an hour and it's so embarrassingly stupid :(
+                    // -- Evan
+                    for(int i = 0; i < lineparts.length; i++) {
+                        String thispart = lineparts[i];
+                        String newpart = "";
+
+                        while(!thispart.equals("")) {
+                            int apostropheCount = 0;
+                            while(thispart.charAt(apostropheCount) == '\'')
+                                apostropheCount++;
+
+                            switch (apostropheCount) {
+                                case 0:
+                                    newpart += thispart.charAt(0);
+                                    thispart = thispart.substring(1);
+                                    break;
+                                case 1:
+                                    newpart += "''";
+                                    thispart = thispart.substring(1);
+                                    break;
+                                default:
+                                    thispart += thispart.substring(0, apostropheCount);
+                                    thispart = thispart.substring(apostropheCount);
+                            }
+                        }
+
+                        lineparts[i] = newpart;
+                    }
+
+                    // Plug the values into the format string
+                    for(int i = 0; i < lineparts.length; i++) {
+                        values = values.replaceFirst( "%" + (i+1), lineparts[i] );
+                        System.out.println( String.format("New values: \"%s\"", values) );
+                    }
+
+                } else {
+                    values = line;
+                }
+
+                statement.execute( String.format( "insert into %s values (%s);", tablename, values) ); // SQLException
             }
 
         } catch(FileNotFoundException fnfe) {
@@ -133,6 +193,9 @@ public class DBLiason {
         }
     }
 
+    private static void populateTableFromCSV(String tablename, String filename) {
+        populateTableFromCSV(tablename, filename, ""); // Default to as-is formatting
+    }
 
     /* General-purpose DB-accessing methods.
      * Use these to implement all the different functionality that is shared between
@@ -158,7 +221,7 @@ public class DBLiason {
 
             while(packages.next()) {
                 int nextID = packages.getInt("ID");
-                String nextShipTime = packages.getTimestamp("shiptime").toString();
+                String nextShipTime = packages.getTimestamp("ship_timestamp").toString();
 
                 result += String.format("Package %d. Ship time: %s\n", nextID, nextShipTime);
             }

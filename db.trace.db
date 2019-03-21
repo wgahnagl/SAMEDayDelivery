@@ -466,3 +466,124 @@ create table package (ID                   int primary key,price                
 2019-03-21 15:35:14 jdbc[3]: exception
 org.h2.jdbc.JdbcSQLSyntaxErrorException: Table "PACKAGE" not found; SQL statement:
 select ID, ship_timestamp from package [42102-198]
+2019-03-21 16:06:38 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Column "ID" not found; SQL statement:
+insert into customer values (ID,name,email,addr_line1,city,province,zip_code,country); [42122-198]
+	at org.h2.message.DbException.getJdbcSQLException(DbException.java:451)
+	at org.h2.message.DbException.getJdbcSQLException(DbException.java:427)
+	at org.h2.message.DbException.get(DbException.java:205)
+	at org.h2.message.DbException.get(DbException.java:181)
+	at org.h2.expression.ExpressionColumn.getColumnException(ExpressionColumn.java:176)
+	at org.h2.expression.ExpressionColumn.optimize(ExpressionColumn.java:158)
+	at org.h2.command.dml.Insert.prepare(Insert.java:322)
+	at org.h2.command.Parser.prepareCommand(Parser.java:690)
+	at org.h2.engine.Session.prepareLocal(Session.java:629)
+	at org.h2.engine.Session.prepareCommand(Session.java:567)
+	at org.h2.jdbc.JdbcConnection.prepareCommand(JdbcConnection.java:1247)
+	at org.h2.jdbc.JdbcStatement.executeInternal(JdbcStatement.java:217)
+	at org.h2.jdbc.JdbcStatement.execute(JdbcStatement.java:205)
+	at app.DBLiason.populateTableFromCSV(DBLiason.java:128)
+	at app.DBLiason.setupCustomerTable(DBLiason.java:115)
+	at app.DBLiason.setupDB(DBLiason.java:65)
+	at app.DBLiason.main(DBLiason.java:184)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:497)
+	at com.intellij.rt.execution.application.AppMain.main(AppMain.java:147)
+2019-03-21 16:06:55 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Syntax error in SQL statement "INSERT INTO CUSTOMER VALUES (1,BEN NEWMAN[*],BEN_NEWMAN73@COMCAST.NET,570 BIRR ST,ROCHESTER,NEW YORK,14613,UNITED STATES); "; expected "., (, [, ::, *, /, %, +, -, ||, ~, !~, NOT, LIKE, ILIKE, REGEXP, IS, IN, BETWEEN, AND, OR, ,, )"; SQL statement:
+insert into customer values (1,Ben Newman,ben_newman73@comcast.net,570 BIRR ST,ROCHESTER,NEW YORK,14613,UNITED STATES); [42001-198]
+2019-03-21 16:15:39 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Syntax error in SQL statement "INSERT INTO CUSTOMER VALUES (%[*]1, '%2', '%3', '%4%', '%5', '%6', %7, '%8'); "; expected "), DEFAULT, NOT, EXISTS, INTERSECTS"; SQL statement:
+insert into customer values (%1, '%2', '%3', '%4%', '%5', '%6', %7, '%8'); [42001-198]
+2019-03-21 16:15:55 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Syntax error in SQL statement "INSERT INTO CUSTOMER VALUES (%[*]1, '%2', '%3', '%4%', '%5', '%6', %7, '%8'); "; expected "), DEFAULT, NOT, EXISTS, INTERSECTS"; SQL statement:
+insert into customer values (%1, '%2', '%3', '%4%', '%5', '%6', %7, '%8'); [42001-198]
+2019-03-21 16:16:31 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Syntax error in SQL statement "INSERT INTO CUSTOMER VALUES (%[*]1, '%2', '%3', '%4%', '%5', '%6', %7, '%8'); "; expected "), DEFAULT, NOT, EXISTS, INTERSECTS"; SQL statement:
+insert into customer values (%1, '%2', '%3', '%4%', '%5', '%6', %7, '%8'); [42001-198]
+2019-03-21 16:17:06 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Syntax error in SQL statement "INSERT INTO CUSTOMER VALUES (%[*]1, '%2', '%3', '%4%', '%5', '%6', %7, '%8'); "; expected "), DEFAULT, NOT, EXISTS, INTERSECTS"; SQL statement:
+insert into customer values (%1, '%2', '%3', '%4%', '%5', '%6', %7, '%8'); [42001-198]
+2019-03-21 16:18:05 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Syntax error in SQL statement "insert into customer values (392, 'Serafino Repetti', 'srepetti@comcast.net', '77 VIA DELL'ARCOVEGGIO%', 'BOLOGNA', 'EMILIA-ROMAGNA', 40129, 'ITALY[*]');"; SQL statement:
+insert into customer values (392, 'Serafino Repetti', 'srepetti@comcast.net', '77 VIA DELL'ARCOVEGGIO%', 'BOLOGNA', 'EMILIA-ROMAGNA', 40129, 'ITALY'); [42000-198]
+2019-03-21 16:19:49 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Column "Ben Newman" not found; SQL statement:
+insert into customer values (1, "Ben Newman", "ben_newman73@comcast.net", "570 BIRR ST%", "ROCHESTER", "NEW YORK", 14613, "UNITED STATES"); [42122-198]
+	at org.h2.message.DbException.getJdbcSQLException(DbException.java:451)
+	at org.h2.message.DbException.getJdbcSQLException(DbException.java:427)
+	at org.h2.message.DbException.get(DbException.java:205)
+	at org.h2.message.DbException.get(DbException.java:181)
+	at org.h2.expression.ExpressionColumn.getColumnException(ExpressionColumn.java:176)
+	at org.h2.expression.ExpressionColumn.optimize(ExpressionColumn.java:158)
+	at org.h2.command.dml.Insert.prepare(Insert.java:322)
+	at org.h2.command.Parser.prepareCommand(Parser.java:690)
+	at org.h2.engine.Session.prepareLocal(Session.java:629)
+	at org.h2.engine.Session.prepareCommand(Session.java:567)
+	at org.h2.jdbc.JdbcConnection.prepareCommand(JdbcConnection.java:1247)
+	at org.h2.jdbc.JdbcStatement.executeInternal(JdbcStatement.java:217)
+	at org.h2.jdbc.JdbcStatement.execute(JdbcStatement.java:205)
+	at app.DBLiason.populateTableFromCSV(DBLiason.java:148)
+	at app.DBLiason.setupCustomerTable(DBLiason.java:115)
+	at app.DBLiason.setupDB(DBLiason.java:65)
+	at app.DBLiason.main(DBLiason.java:207)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:497)
+	at com.intellij.rt.execution.application.AppMain.main(AppMain.java:147)
+2019-03-21 16:20:46 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Column "Ben Newman" not found; SQL statement:
+insert into customer values (1, "Ben Newman", "ben_newman73@comcast.net", "570 BIRR ST", "ROCHESTER", "NEW YORK", 14613, "UNITED STATES"); [42122-198]
+	at org.h2.message.DbException.getJdbcSQLException(DbException.java:451)
+	at org.h2.message.DbException.getJdbcSQLException(DbException.java:427)
+	at org.h2.message.DbException.get(DbException.java:205)
+	at org.h2.message.DbException.get(DbException.java:181)
+	at org.h2.expression.ExpressionColumn.getColumnException(ExpressionColumn.java:176)
+	at org.h2.expression.ExpressionColumn.optimize(ExpressionColumn.java:158)
+	at org.h2.command.dml.Insert.prepare(Insert.java:322)
+	at org.h2.command.Parser.prepareCommand(Parser.java:690)
+	at org.h2.engine.Session.prepareLocal(Session.java:629)
+	at org.h2.engine.Session.prepareCommand(Session.java:567)
+	at org.h2.jdbc.JdbcConnection.prepareCommand(JdbcConnection.java:1247)
+	at org.h2.jdbc.JdbcStatement.executeInternal(JdbcStatement.java:217)
+	at org.h2.jdbc.JdbcStatement.execute(JdbcStatement.java:205)
+	at app.DBLiason.populateTableFromCSV(DBLiason.java:148)
+	at app.DBLiason.setupCustomerTable(DBLiason.java:115)
+	at app.DBLiason.setupDB(DBLiason.java:65)
+	at app.DBLiason.main(DBLiason.java:207)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:497)
+	at com.intellij.rt.execution.application.AppMain.main(AppMain.java:147)
+2019-03-21 16:50:15 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Column "Ben Newman" not found; SQL statement:
+insert into customer values (1, "Ben Newman", "ben_newman73@comcast.net", "570 BIRR ST", "ROCHESTER", "NEW YORK", 14613, "UNITED STATES"); [42122-198]
+	at org.h2.message.DbException.getJdbcSQLException(DbException.java:451)
+	at org.h2.message.DbException.getJdbcSQLException(DbException.java:427)
+	at org.h2.message.DbException.get(DbException.java:205)
+	at org.h2.message.DbException.get(DbException.java:181)
+	at org.h2.expression.ExpressionColumn.getColumnException(ExpressionColumn.java:176)
+	at org.h2.expression.ExpressionColumn.optimize(ExpressionColumn.java:158)
+	at org.h2.command.dml.Insert.prepare(Insert.java:322)
+	at org.h2.command.Parser.prepareCommand(Parser.java:690)
+	at org.h2.engine.Session.prepareLocal(Session.java:629)
+	at org.h2.engine.Session.prepareCommand(Session.java:567)
+	at org.h2.jdbc.JdbcConnection.prepareCommand(JdbcConnection.java:1247)
+	at org.h2.jdbc.JdbcStatement.executeInternal(JdbcStatement.java:217)
+	at org.h2.jdbc.JdbcStatement.execute(JdbcStatement.java:205)
+	at app.DBLiason.populateTableFromCSV(DBLiason.java:180)
+	at app.DBLiason.setupCustomerTable(DBLiason.java:115)
+	at app.DBLiason.setupDB(DBLiason.java:65)
+	at app.DBLiason.main(DBLiason.java:239)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:497)
+	at com.intellij.rt.execution.application.AppMain.main(AppMain.java:147)
+2019-03-21 16:50:51 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Syntax error in SQL statement "insert into customer values (392, 'Serafino Repetti', 'srepetti@comcast.net', '77 VIA DELL'ARCOVEGGIO', 'BOLOGNA', 'EMILIA-ROMAGNA', 40129, 'ITALY[*]');"; SQL statement:
+insert into customer values (392, 'Serafino Repetti', 'srepetti@comcast.net', '77 VIA DELL'ARCOVEGGIO', 'BOLOGNA', 'EMILIA-ROMAGNA', 40129, 'ITALY'); [42000-198]
