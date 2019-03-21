@@ -92,13 +92,13 @@ public class TestApplication {
         return printedTable;
     }
 
-    public static void main(String[] args) {
-        get("/", (req, res) ->
-                String.format("<pre>h--hewwo??? owo;;; mistew posteman???"
-                        + "<br/><br/>"
-                        + "Anyway, here's your recent visits:"
-                        + "<br/><br/>%s",
-
-                        addVisit("null")));
-    }
+//    public static void main(String[] args) {
+//        get("/", (req, res) ->
+//                String.format("<pre>h--hewwo??? owo;;; mistew posteman???"
+//                        + "<br/><br/>"
+//                        + "Anyway, here's your recent visits:"
+//                        + "<br/><br/>%s",
+//
+//                        addVisit("null")));
+//    }
 }
