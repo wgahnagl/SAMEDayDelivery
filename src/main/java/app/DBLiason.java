@@ -352,6 +352,10 @@ public class DBLiason {
         }
     }
 
+    public static ResultSet getLatePackages() throws SQLException {
+        return statement.executeQuery("select * from package where delivery_timestamp is null and expected_delivery < current_timestamp");
+    }
+
 
     /* Main method for testing only */
 
@@ -371,5 +375,11 @@ public class DBLiason {
 
         System.out.println("CUSTOMER TABLE PRINTOUT:");
         System.out.println(prettyCustomerList());
+
+        try {
+            getLatePackages();
+        } catch(SQLException sqle) {
+            sqle.printStackTrace();
+        }
     }
 }
