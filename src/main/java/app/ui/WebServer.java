@@ -1,4 +1,4 @@
-package ui;
+package app.ui;
 import static spark.Spark.*;
 
 import java.util.Objects;

@@ -1,9 +1,11 @@
+package app;
+
 import java.io.InputStream;
 import java.util.Objects;
 import java.util.logging.LogManager;
 import java.util.logging.Logger;
 
-import ui.WebServer;
+import app.ui.WebServer;
 
 import spark.TemplateEngine;
 import spark.template.freemarker.FreeMarkerEngine;
