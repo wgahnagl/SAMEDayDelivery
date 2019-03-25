@@ -1,4 +1,8 @@
 <!DOCTYPE html>
 <#include "components/header.ftl">
-Home
+things we need
+.name
+.address
+.email
+
 </html>
