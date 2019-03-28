@@ -1,9 +1,10 @@
 package app;
 
-import java.util.Objects;
 import app.ui.WebServer;
 import spark.TemplateEngine;
 import spark.template.freemarker.FreeMarkerEngine;
+
+import java.util.Objects;
 
 public final class Application {
 
