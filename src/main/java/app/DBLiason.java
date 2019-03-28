@@ -6,6 +6,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.nio.Buffer;
 import java.sql.*;
+import java.util.ArrayList;
 
 /**
  * Created by evan on 3/20/19.
@@ -351,6 +352,22 @@ public class DBLiason {
             return "<SQL error>";
         }
     }
+
+    public static ArrayList<String> getCreditCardsForCustomer( int ID ) throws SQLException {
+
+        String sql = String.format("select card_num from customerHasCreditCard where customer_id = %d;", ID);
+        ResultSet rs = statement.executeQuery(sql);
+
+        ArrayList<String> result = new ArrayList<>();
+
+        while (rs.next()) {
+            result.add(rs.getString("card_num"));
+        }
+
+        return result;
+    }
+
+
 
     public static ResultSet getLatePackages() throws SQLException {
         return statement.executeQuery("select * from package where delivery_timestamp is null and expected_delivery < current_timestamp");
