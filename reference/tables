@@ -1,0 +1,7 @@
+
+Not complete. Please add to this file if you need another table to be listed.
+
+
+TABLE customerHasCreditCard
+INT customer_id
+STRING card_num
