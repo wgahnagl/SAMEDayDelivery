@@ -4,12 +4,16 @@ import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
-import java.nio.Buffer;
 import java.sql.*;
 import java.util.ArrayList;
 
 /**
  * Created by evan on 3/20/19.
+ *
+ * NOTE: A lot of these methods throw SQLExceptions here. At first glance that might seem
+ * to defeat the purpose of this class. The general principle here is that exceptions are
+ * thrown all the way up to the application level so that the application can decide what
+ * to do with them (i.e. display it to the customer, fail silently, try again, whatever).
  */
 public class DBLiason {
     // JDBC driver name and database URL
@@ -102,10 +106,12 @@ public class DBLiason {
         statement.execute("create table customer (" +
                 "ID int primary key," +
 
-                "name varchar(255)," +
+                "last_name varchar(255)," +
+                "first_name varchar(255)," +
                 "email varchar(255)," +
 
                 "addr_line1 varchar(1024)," + // You wouldn't think addresses could get this long, but they can.
+                "addr_line2 varchar(1024)," +
                 "city varchar(255)," +
                 "province varchar(255)," + // When the country is "USA", the province is the state
                 "zipcode varchar(255)," + // zipcodes can begin with 0 and can contain dashes
@@ -113,7 +119,8 @@ public class DBLiason {
                 ");"
         );
 
-        populateTableFromCSV("customer", "Phase 2/customer.csv", "%1, '%2', '%3', '%4', '%5', '%6', '%7', '%8'");
+        // No addr_line2's in the csv, so put in null
+        populateTableFromCSV("customer", "Phase 2/customerLastFirst.csv", "%1, '%2', '%3', '%4', '%5', null, '%6', '%7', '%8', '%9'");
     }
 
     private static void setupTripTable() throws SQLException {
@@ -213,14 +220,14 @@ public class DBLiason {
     }
 
 
-    /* Behing-the-scenes utilities, used only privately */
+    /* Behind-the-scenes utilities, used only privately */
 
     private static String escapeSingleQuotes(String value) {
         // H2 needs all instances of ' (one single quote) escaped as '' (two single quotes)
         return value.replaceAll("'", "''");
     }
 
-    private static String formatRow(String valueList, String formatString) {
+    private static String formatInputRow(String valueList, String formatString) {
         // Apply a format string like ("%3, %2, %1, '%4', %5")
         // to a list of values like "pie, 32, 42, David Smith, hello"
 
@@ -251,7 +258,7 @@ public class DBLiason {
                     continue;
 
                 if(!reformat.equals(""))  // If specified, apply the format string
-                    line = formatRow(line, reformat);
+                    line = formatInputRow(line, reformat);
 
                 statement.execute( String.format( "insert into %s values (%s);", tablename, line) ); // SQLException
             }
@@ -273,6 +280,43 @@ public class DBLiason {
         populateTableFromCSV(tablename, filename, "");
     }
 
+    private static void prettifyResultSet(ResultSet rs, String format) throws SQLException {
+        /* UNDER CONSTRUCTION */
+
+        ArrayList<String> formatted = new ArrayList<>();
+
+        while(rs.next()) {
+            // Start with an empty row and build it up one char at a time
+            // by consulting the rs and the format string.
+
+            String thisRow = "";
+            String formatCopy = format;
+
+            while(!formatCopy.equals("")) {
+                switch(formatCopy.charAt(0)) {
+
+                    // For % signs, insert a value from the table
+                    case '%':
+                        int upTo = formatCopy.indexOf(')');
+                        String[] typeVar = formatCopy.substring(2, upTo).split(",");
+                        formatCopy = formatCopy.substring(upTo);
+
+                        switch(typeVar[0].toLowerCase()) {
+                            case "int":
+                            case "d":
+                                thisRow += rs.getInt(typeVar[1]);
+                        }
+
+                    // Copy the next character literally, no matter what it is
+                    case '\\':
+                        thisRow += formatCopy.charAt(1);
+                        formatCopy = formatCopy.substring(2);
+                        break;
+                }
+            }
+        }
+    }
+
 
     /* General-purpose DB-accessing methods.
      * Use these to implement all the different functionality that is shared between
@@ -286,19 +330,19 @@ public class DBLiason {
         statement.execute(sql);
     }
 
-    public static void addCustomer(String name, String email, String addr_line1, String city, String province, String zip, String country)
-        throws SQLException {
+    public static void addCustomer(String lastName, String firstName, String email, String addr_line1, String addr_line2,
+                                   String city, String province, String zip, String country) throws SQLException {
 
-        String valuesFmt = "%d,%s,%s,%s,%s,%s,%s,%s";
-        String rowFmt = "%1, '%2', '%3', '%4', '%5', '%6', '%7', '%8'";
-        String insertCmdFmt = "insert into customer values (%s);";
+        String valuesFmt = "%d,%s,%s,%s,%s,%s,%s,%s,%s,%s"; // Put the parameters into a String
+        String rowFmt = "%1, '%2', '%3', '%4', '%5', '%6', '%7', '%8', '%9', '%10'"; // Format that String into a values list
+        String insertCmdFmt = "insert into customer values (%s);"; // Put that values list into an sql statement
 
         ResultSet maxIdResult = statement.executeQuery("select max(ID) from customer;");
         maxIdResult.first();
         int maxID = maxIdResult.getInt("MAX(ID)");
 
-        String values = String.format( valuesFmt, maxID+1, name, email, addr_line1, city, province, zip, country);
-        String row = formatRow( values, rowFmt );
+        String values = String.format( valuesFmt, maxID+1, lastName, firstName, email, addr_line1, addr_line2, city, province, zip, country);
+        String row = formatInputRow( values, rowFmt );
         String insertCmd = String.format( insertCmdFmt, row );
 
         statement.execute(insertCmd);
@@ -336,11 +380,11 @@ public class DBLiason {
 
         try {
             String result = "";
-            ResultSet customers = statement.executeQuery("select ID, name from customer");
+            ResultSet customers = statement.executeQuery("select ID, last_name, first_name from customer");
 
             while(customers.next()) {
                 int nextID = customers.getInt("ID");
-                String nextName = customers.getString("name");
+                String nextName = customers.getString("first_name") + " " + customers.getString("last_name");
 
                 result += String.format("Customer #%d (%s)\n", nextID, nextName);
             }
@@ -385,7 +429,7 @@ public class DBLiason {
         System.out.println(prettyPackageList());
 
         try {
-            addCustomer("Evan Rysdam", "err2315@g.rit.edu", "49 Mont Vernon Street", "Milford", "New Hampshire", "03055", "USA");
+            addCustomer("Rysdam", "Evan", "err2315@g.rit.edu", "49 Mont Vernon Street", "Second floor, room 101", "Milford", "New Hampshire", "03055", "USA");
         } catch(SQLException sqle) {
             sqle.printStackTrace();
         }
