@@ -15,8 +15,8 @@ public class PostSignUpRoute implements Route {
         final String lastName = request.queryParams("lastName");
         final String email = request.queryParams("email");
         final String address = request.queryParams("address");
-        final String city = request.queryParams("city");
         final String address2 = request.queryParams("address2");
+        final String city = request.queryParams("city");
         final String country = request.queryParams("country");
         final String state = request.queryParams("state");
         final String zip = request.queryParams("zip");
@@ -25,7 +25,7 @@ public class PostSignUpRoute implements Route {
         final String cc_expiration = request.queryParams("cc-expiration");
         final String cc_cvv = request.queryParams("cc-cvv");
 
-        DBLiason.addCustomer(firstName, lastName, email, address, address2, city, state, zip, country);
+        DBLiason.addCustomer(lastName, firstName, email, address, address2, city, state, zip, country);
 
         response.redirect("/");
         return null;
