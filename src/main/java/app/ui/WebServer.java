@@ -2,6 +2,8 @@ package app.ui;
 import static spark.Spark.*;
 
 import java.util.Objects;
+
+import app.appl.PostSignUpRoute;
 import spark.TemplateEngine;
 
 public class WebServer {
@@ -25,6 +27,7 @@ public class WebServer {
         get(HOME_URL, new GetHomeRoute(templateEngine));
         get(SIGNIN_URL, new GetSignInRoute(templateEngine));
         get(SIGNUP_URL, new GetSignUpRoute(templateEngine));
+        post(SIGNUP_URL, new PostSignUpRoute());
         get(TRACKING_URL, new GetTrackingRoute(templateEngine));
         get(ACCOUNT_URL, new GetAccountRoute(templateEngine));
         get(FORGOT_PASSWORD_URL, new GetPasswordRecoverRoute(templateEngine));
