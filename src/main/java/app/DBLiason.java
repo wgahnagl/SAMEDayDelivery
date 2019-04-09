@@ -1,3 +1,4 @@
+
 package app;
 
 import java.io.BufferedReader;
@@ -116,6 +117,9 @@ public class DBLiason {
                 "province varchar(255)," + // When the country is "USA", the province is the state
                 "zipcode varchar(255)," + // zipcodes can begin with 0 and can contain dashes
                 "country varchar(255)," +
+
+                "unique (email)," +
+                          
                 ");"
         );
 
@@ -186,7 +190,7 @@ public class DBLiason {
     }
 
     private static void setupCustomerHasBankAccountTable() throws SQLException {
-        statement.execute("drop table customerBankAccount if exists");
+        statement.execute("drop table customerHasBankAccount if exists");
         statement.execute("create table customerBankAccount(" +
                 "customer_id int, " +
                 "acct_number varchar(255)," +
@@ -227,6 +231,10 @@ public class DBLiason {
         return value.replaceAll("'", "''");
     }
 
+    // TODO: Rename this method to "formatCommand" since there's no reason it can't
+    // be that general. Then change all the usages to match.  (It is already used the new
+    // way in getCustomerByAddress). Also, switch the arguments to be consistent
+    // with the String.format() frame.
     private static String formatInputRow(String valueList, String formatString) {
         // Apply a format string like ("%3, %2, %1, '%4', %5")
         // to a list of values like "pie, 32, 42, David Smith, hello"
@@ -243,7 +251,7 @@ public class DBLiason {
 
     private static void populateTableFromCSV(String tablename, String filename, String reformat) {
         // Helper method to populate a table from a CSV file
-        // If reformat parameter is specified, it should look something like "%1, %2, (%3), '%4'"
+        // If reformat parameter is specified, it should look something like "'%1', %2, (%3)"
         // The elements from each line of the CSV will be slotted into the %n symbols
 
         BufferedReader reader;
@@ -254,7 +262,7 @@ public class DBLiason {
 
             while( (line = reader.readLine()) != null) { // IOException
 
-                if(line.trim().startsWith("//"))   // Allow the CSV to comment out lines with "//"
+                if(line.trim().startsWith("//"))   // Allow  CSV to comment out lines w/ "//"
                     continue;
 
                 if(!reformat.equals(""))  // If specified, apply the format string
@@ -318,6 +326,126 @@ public class DBLiason {
     }
 
 
+    private static int currentMaxCustomerID() throws SQLException {
+        ResultSet maxIdResult = statement.executeQuery("select max(ID) from customer;");
+        maxIdResult.first();
+        return maxIdResult.getInt("MAX(ID)");
+    }
+        
+    private static void addCustomerByInfo( String lastName, String firstName, String email )
+                                           throws SQLException {
+        String valuesFmt = "%d,%s,%s,%s"; // Put parameters into a String
+        String rowFmt = "%1, '%2', '%3', '%4', null, null, null, null, null, null";
+        String insertCmdFmt = "insert into customer values (%s);";
+
+        int maxID = currentMaxCustomerID();
+        
+        String values = String.format( valuesFmt, maxID + 1, lastName, firstName, email );
+        String row = formatInputRow( values, rowFmt );
+        String insertCmd = String.format( insertCmdFmt, row );
+
+        statement.execute( insertCmd );
+    }
+
+    private static void addCustomerByAddr( String addr_line1, String addr_line2,String city,
+                                           String province, String zipcode, String country )
+                                           throws SQLException {
+        String valuesFmt = "%d,%s,%s,%s,%s,%s,%s";
+        String rowFmt = "%1, null, null, null, '%2', '%3', '%4', '%5', '%6', '%7'";
+        String insertCmdFmt = "insert into customer values (%s);";
+
+        int maxID = currentMaxCustomerID();
+
+        String values = String.format( valuesFmt, maxID + 1, addr_line1, addr_line2,
+                                       city, province, zipcode, country );
+        String row = formatInputRow( values, rowFmt );
+        String insertCmd = String.format( insertCmdFmt, row );
+
+        statement.execute( insertCmd );
+    }
+
+    private static int getCustomerByEmail( String email ) throws SQLException {
+        String valuesFmt = "%s";
+        String cmdFmt = "select from customer where email = '%1';";
+
+        String values = String.format( valuesFmt, email );
+        String cmd = formatInputRow( values, cmdFmt );
+
+        ResultSet result = statement.executeQuery( cmd );
+        if (!result.first()) return -1; // I this will never happen
+        return result.getInt("ID");
+    }   
+    
+    private static int getCustomerByAddr( String addr_line1, String addr_line2, String city,
+                                          String province, String zipcode, String country )
+                                          throws SQLException {
+        String valuesFmt = "%s,%s,%s,%s,%s,%s";
+        String cmdFmt = "select from customer where " +
+            "addr_line1 = '%1' and " +
+            "addr_line2 = '%2' and " +
+            "city = '%3' and " +
+            "province = '%4' and " +
+            "zipcode = '%5' and " +
+            "country = '%6' " +
+            ";";
+        
+        String values = String.format( valuesFmt, addr_line1, addr_line2, city, province,
+                                       zipcode, country );
+        String cmd = formatInputRow( values, cmdFmt );
+
+        ResultSet result = statement.executeQuery( cmd );
+        if(!result.first()) return -1; // No such customer
+        return result.getInt("ID");
+    }
+
+    private static boolean linkAddress( String email, String addr_line1, String addr_line2,
+                                        String city, String province, String zipcode,
+                                        String country )
+                                        throws SQLException {
+        // TODO (Or maybe it can be left alone)
+        // This method is written with the admittedly naive assumption that the customer
+        // was honest (and not mistaken) about their address. If it finds a customer A with
+        // the right email and another customer B with the right address, it copies the
+        // address info to A and deletes B *INDISCRIMINANTLY*.  Thus if A typed in the
+        // address of some other customer, that customer will be deleted (!).
+
+        int emailID = getCustomerByEmail( email );
+        int addrID = getCustomerByAddr( addr_line1, addr_line2, city,
+                                        province, zipcode, country );
+
+        if( emailID == addrID )
+            // This could mean either that the address is already linked (or something else)
+            return false;
+        
+        String valuesFmt = "%s,%s,%s,%s,%s,%s,%d";
+        String cmdFmt = "update customer " +
+            "set addr_line1 = '%1' " + 
+            "set addr_line2 = '%2' " +
+            "set city = '%3' " +
+            "set province = '%4' " +
+            "set zipcode = '%5' " +
+            "set country = '%6' " +
+            "where ID = %7";;
+
+        String values = String.format( valuesFmt, addr_line1, addr_line2, city, province,
+                                       zipcode, country, emailID );
+        String cmd = formatInputRow( values, cmdFmt );
+
+        statement.execute( cmd );
+
+        valuesFmt = "%d";
+        cmdFmt = "delete from customer where ID = %1;";
+
+        values = String.format( valuesFmt, addrID );
+        cmd = formatInputRow( values, cmdFmt );
+
+        statement.execute( cmd );
+        
+        return true;
+    }
+
+        
+    
     /* General-purpose DB-accessing methods.
      * Use these to implement all the different functionality that is shared between
      * the graphical UI and the command-line UI.
@@ -330,23 +458,8 @@ public class DBLiason {
         statement.execute(sql);
     }
 
-    public static void addCustomer(String lastName, String firstName, String email, String addr_line1, String addr_line2,
-                                   String city, String province, String zip, String country) throws SQLException {
 
-        String valuesFmt = "%d,%s,%s,%s,%s,%s,%s,%s,%s,%s"; // Put the parameters into a String
-        String rowFmt = "%1, '%2', '%3', '%4', '%5', '%6', '%7', '%8', '%9', '%10'"; // Format that String into a values list
-        String insertCmdFmt = "insert into customer values (%s);"; // Put that values list into an sql statement
 
-        ResultSet maxIdResult = statement.executeQuery("select max(ID) from customer;");
-        maxIdResult.first();
-        int maxID = maxIdResult.getInt("MAX(ID)");
-
-        String values = String.format( valuesFmt, maxID+1, lastName, firstName, email, addr_line1, addr_line2, city, province, zip, country);
-        String row = formatInputRow( values, rowFmt );
-        String insertCmd = String.format( insertCmdFmt, row );
-
-        statement.execute(insertCmd);
-    }
 
     // Todo: Generalize prettyPackageList and prettyCustomerList into prettyResults(ResultSet result, String format)
     // which will take a string like "Package: %(d,id). Ship time: %(timestamp,ship_time)".
@@ -428,11 +541,11 @@ public class DBLiason {
         System.out.println("PACKAGE TABLE PRINTOUT:");
         System.out.println(prettyPackageList());
 
-        try {
-            addCustomer("Rysdam", "Evan", "err2315@g.rit.edu", "49 Mont Vernon Street", "Second floor, room 101", "Milford", "New Hampshire", "03055", "USA");
+        /*try {
+            //addCustomer("Rysdam", "Evan", "err2315@g.rit.edu", "49 Mont Vernon Street", "Second floor, room 101", "Milford", "New Hampshire", "03055", "USA");
         } catch(SQLException sqle) {
             sqle.printStackTrace();
-        }
+            }*/
 
         System.out.println("CUSTOMER TABLE PRINTOUT:");
         System.out.println(prettyCustomerList());
