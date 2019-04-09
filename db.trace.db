@@ -913,3 +913,76 @@ select ID, name from customer [42122-198]
 2019-03-28 16:44:45 jdbc[3]: exception
 org.h2.jdbc.JdbcSQLSyntaxErrorException: Syntax error in SQL statement "SELECT ID, LAST_NAME, FIRST_NAME, FROM CUSTOMER [*]"; expected "., (, USE, AS, RIGHT, LEFT, FULL, INNER, JOIN, CROSS, NATURAL, ,, SELECT"; SQL statement:
 select ID, last_name, first_name, from customer [42001-198]
+2019-04-09 16:39:25 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLException: Table "CUSTOMERBANKACCOUNT" already exists; SQL statement:
+create table customerBankAccount(customer_id int, acct_number varchar(255),primary key (customer_id, acct_number), foreign key (customer_id) references customer(ID), ); [42101-197]
+2019-04-09 18:23:32 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLException: Column "LAST_NAME" not found; SQL statement:
+select ID, last_name, first_name from package [42122-197]
+	at org.h2.message.DbException.getJdbcSQLException(DbException.java:357)
+	at org.h2.message.DbException.get(DbException.java:179)
+	at org.h2.message.DbException.get(DbException.java:155)
+	at org.h2.expression.ExpressionColumn.optimize(ExpressionColumn.java:150)
+	at org.h2.command.dml.Select.prepare(Select.java:858)
+	at org.h2.command.Parser.prepareCommand(Parser.java:283)
+	at org.h2.engine.Session.prepareLocal(Session.java:611)
+	at org.h2.engine.Session.prepareCommand(Session.java:549)
+	at org.h2.jdbc.JdbcConnection.prepareCommand(JdbcConnection.java:1247)
+	at org.h2.jdbc.JdbcStatement.executeQuery(JdbcStatement.java:78)
+	at app.DBLiason.prettyCustomerList(DBLiason.java:507)
+	at app.DBLiason.main(DBLiason.java:554)
+2019-04-09 18:25:02 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLException: Column "LASTNAME" not found; SQL statement:
+select ID, lastName, firstName from package [42122-197]
+	at org.h2.message.DbException.getJdbcSQLException(DbException.java:357)
+	at org.h2.message.DbException.get(DbException.java:179)
+	at org.h2.message.DbException.get(DbException.java:155)
+	at org.h2.expression.ExpressionColumn.optimize(ExpressionColumn.java:150)
+	at org.h2.command.dml.Select.prepare(Select.java:858)
+	at org.h2.command.Parser.prepareCommand(Parser.java:283)
+	at org.h2.engine.Session.prepareLocal(Session.java:611)
+	at org.h2.engine.Session.prepareCommand(Session.java:549)
+	at org.h2.jdbc.JdbcConnection.prepareCommand(JdbcConnection.java:1247)
+	at org.h2.jdbc.JdbcStatement.executeQuery(JdbcStatement.java:78)
+	at app.DBLiason.prettyCustomerList(DBLiason.java:507)
+	at app.DBLiason.main(DBLiason.java:554)
+2019-04-09 18:31:27 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLException: Cannot parse "TIMESTAMP" constant "2" [22007-197]
+	at org.h2.message.DbException.getJdbcSQLException(DbException.java:357)
+	at org.h2.message.DbException.get(DbException.java:168)
+	at org.h2.value.ValueTimestamp.parse(ValueTimestamp.java:147)
+	at org.h2.value.Value.convertTo(Value.java:1071)
+	at org.h2.value.Value.convertTo(Value.java:617)
+	at org.h2.value.Value.convertTo(Value.java:592)
+	at org.h2.value.Value.getTimestamp(Value.java:444)
+	at org.h2.jdbc.JdbcResultSet.getTimestamp(JdbcResultSet.java:490)
+	at app.DBLiason.prettifyResultSet(DBLiason.java:327)
+	at app.DBLiason.prettyCustomerList(DBLiason.java:515)
+	at app.DBLiason.main(DBLiason.java:561)
+Caused by: java.lang.IllegalArgumentException: 2
+	at org.h2.util.DateTimeUtils.parseDateValue(DateTimeUtils.java:345)
+	at org.h2.util.DateTimeUtils.parseTimestamp(DateTimeUtils.java:460)
+	at org.h2.value.ValueTimestamp.parse(ValueTimestamp.java:145)
+	... 8 more
+2019-04-09 18:35:45 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLException: Column "IDhello" not found [42122-197]
+	at org.h2.message.DbException.getJdbcSQLException(DbException.java:357)
+	at org.h2.message.DbException.get(DbException.java:179)
+	at org.h2.message.DbException.get(DbException.java:155)
+	at org.h2.jdbc.JdbcResultSet.getColumnIndex(JdbcResultSet.java:3148)
+	at org.h2.jdbc.JdbcResultSet.get(JdbcResultSet.java:3247)
+	at org.h2.jdbc.JdbcResultSet.getInt(JdbcResultSet.java:346)
+	at app.DBLiason.prettifyResultSet(DBLiason.java:319)
+	at app.DBLiason.prettyCustomerList(DBLiason.java:519)
+	at app.DBLiason.main(DBLiason.java:565)
+2019-04-09 18:37:37 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLException: Column "ID)" not found [42122-197]
+	at org.h2.message.DbException.getJdbcSQLException(DbException.java:357)
+	at org.h2.message.DbException.get(DbException.java:179)
+	at org.h2.message.DbException.get(DbException.java:155)
+	at org.h2.jdbc.JdbcResultSet.getColumnIndex(JdbcResultSet.java:3148)
+	at org.h2.jdbc.JdbcResultSet.get(JdbcResultSet.java:3247)
+	at org.h2.jdbc.JdbcResultSet.getInt(JdbcResultSet.java:346)
+	at app.DBLiason.prettifyResultSet(DBLiason.java:319)
+	at app.DBLiason.prettyCustomerList(DBLiason.java:519)
+	at app.DBLiason.main(DBLiason.java:565)
