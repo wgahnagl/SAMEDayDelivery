@@ -290,8 +290,6 @@ public class DBLiason {
     }
 
     private static ArrayList<String> prettifyResultSet( String format, ResultSet rs ) throws SQLException {
-        /* UNDER CONSTRUCTION */
-
         ArrayList<String> formatted = new ArrayList<>();
         rs.first();
 
@@ -303,7 +301,6 @@ public class DBLiason {
             String formatCopy = format;
 
             while( !formatCopy.equals("") ) {
-                System.out.println( thisRow + " | " + formatCopy);
 
                 switch( formatCopy.charAt(0) ) {
 
@@ -366,6 +363,12 @@ public class DBLiason {
     }
 
 
+    /* Manipulations of the customer table
+     *    Create account:            addCustomerByInfo()
+     *    Add customer from package: addCustomerByAddr()
+     *    Link address:              linkAddress()
+     */
+
     private static int currentMaxCustomerID() throws SQLException {
         ResultSet maxIdResult = statement.executeQuery("select max(ID) from customer;");
         maxIdResult.first();
@@ -403,7 +406,7 @@ public class DBLiason {
 
     private static int getCustomerByEmail( String email ) throws SQLException {
         String valuesFmt = "%s";
-        String cmdFmt = "select from customer where email = '%1';";
+        String cmdFmt = "select * from customer where email = '%1';";
 
         String values = String.format( valuesFmt, email );
         String cmd = formatInputRow( values, cmdFmt );
@@ -415,7 +418,7 @@ public class DBLiason {
     
     private static int getCustomerByAddr( String addr_line1, String addr_line2, String city, String province, String zipcode, String country ) throws SQLException {
         String valuesFmt = "%s,%s,%s,%s,%s,%s";
-        String cmdFmt = "select from customer where " +
+        String cmdFmt = "select * from customer where " +
             "addr_line1 = '%1' and " +
             "addr_line2 = '%2' and " +
             "city = '%3' and " +
@@ -445,25 +448,36 @@ public class DBLiason {
         int addrID = getCustomerByAddr( addr_line1, addr_line2, city,
                                         province, zipcode, country );
 
-        if( emailID == addrID )
-            // This could mean either that the address is already linked (or something else)
+        if(emailID < 0) // Existing customer not found
             return false;
-        
-        String valuesFmt = "%s,%s,%s,%s,%s,%s,%d";
-        String cmdFmt = "update customer " +
-            "set addr_line1 = '%1' " + 
-            "set addr_line2 = '%2' " +
-            "set city = '%3' " +
-            "set province = '%4' " +
-            "set zipcode = '%5' " +
-            "set country = '%6' " +
-            "where ID = %7";;
 
-        String values = String.format( valuesFmt, addr_line1, addr_line2, city, province,
-                                       zipcode, country, emailID );
+        if( emailID == addrID ) // This could mean either that the address is already linked (or something else)
+            return false;
+
+
+        // Set the address for the acting customer (this happens regardless of whether a null customer was found for the address)
+
+        String valuesFmt = "%s,%s,%s,%s,%s,%s,%d";
+        String cmdFmt = "update customer set " +
+            "addr_line1 = '%1',   " +
+            "addr_line2 = '%2',   " +
+            "city = '%3',         " +
+            "province = '%4',     " +
+            "zipcode = '%5',      " +
+            "country = '%6'       " +
+            "where ID = %7 ;      " ;
+
+        String values = String.format( valuesFmt, addr_line1, addr_line2, city, province, zipcode, country, emailID );
         String cmd = formatInputRow( values, cmdFmt );
 
         statement.execute( cmd );
+
+
+        // Delete any null customers
+        // Todo: Also update all other tables to relink addrID to emailID
+
+        if( addrID < 0 )
+            return true; // No need to raise error just because no address was deleted
 
         valuesFmt = "%d";
         cmdFmt = "delete from customer where ID = %1;";
@@ -490,10 +504,6 @@ public class DBLiason {
         statement.execute(sql);
     }
 
-
-    // Todo: Generalize prettyPackageList and prettyCustomerList into prettyResults(ResultSet result, String format)
-    // which will take a string like "Package: %(d,id). Ship time: %(timestamp,ship_time)".
-
     public static String prettyPackageList() {
         // Return a String of a newline-separated list of all the packages in the DB
 
@@ -517,6 +527,22 @@ public class DBLiason {
         try {
             ResultSet packages = statement.executeQuery("select ID, last_name, first_name from customer");
             prettified = prettifyResultSet( "Customer #%(d,ID): %(s,first_name) %(s,last_name)", packages );
+            return asLines(prettified);
+        } catch(SQLException sqle) {
+            sqle.printStackTrace();
+            return "<SQL error>";
+        }
+    }
+
+    public static String prettyCustomerAddressList() {
+        // Return a String of a newline-separated list of all the customers in the DB and their addresses
+
+        ArrayList<String> prettified;
+
+        try {
+            ResultSet packages = statement.executeQuery("select ID, last_name, first_name, addr_line1, addr_line2, city, province, zipcode, country from customer");
+            prettified = prettifyResultSet( "Customer #%(d,ID): %(s,first_name) %(s,last_name) \t >> " +
+                    "%(s,addr_line1) (%(s,addr_line2)) | %(s,city), %(s,province) %(s,zipcode): %(s,country)", packages );
             return asLines(prettified);
         } catch(SQLException sqle) {
             sqle.printStackTrace();
@@ -550,19 +576,30 @@ public class DBLiason {
     public static void main(String[] args) {
         setupDB();
 
-        //populateTableFromCSV("package", "Phase 2/test_csv");
+        String first_name = "Evan";
+        String last_name = "Rysdam";
+        String email = "err2315@rit.edu";
+        String addr_line1 = "60 Colony Manor Drive";
+        String addr_line2 = "apt 109";
+        String city = "Rochester";
+        String province = "New York";
+        String zipcode = "14623";
+        String country = "USA";
+
+        try {
+            addCustomerByInfo(last_name, first_name, email);
+            addCustomerByAddr(addr_line1, addr_line2, city, province, zipcode, country);
+            
+            linkAddress(email, addr_line1, addr_line2, city, province, zipcode, country);
+        } catch (SQLException sqle) {
+            sqle.printStackTrace();
+        }
 
         System.out.println("PACKAGE TABLE PRINTOUT:");
         System.out.println(prettyPackageList());
 
-        /*try {
-            //addCustomer("Rysdam", "Evan", "err2315@g.rit.edu", "49 Mont Vernon Street", "Second floor, room 101", "Milford", "New Hampshire", "03055", "USA");
-        } catch(SQLException sqle) {
-            sqle.printStackTrace();
-            }*/
-
         System.out.println("CUSTOMER TABLE PRINTOUT:");
-        System.out.println(prettyCustomerList());
+        System.out.println(prettyCustomerAddressList());
 
         try {
             getLatePackages();

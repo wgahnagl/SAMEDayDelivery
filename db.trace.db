@@ -986,3 +986,21 @@ org.h2.jdbc.JdbcSQLException: Column "ID)" not found [42122-197]
 	at app.DBLiason.prettifyResultSet(DBLiason.java:319)
 	at app.DBLiason.prettyCustomerList(DBLiason.java:519)
 	at app.DBLiason.main(DBLiason.java:565)
+2019-04-11 15:38:14 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLException: Syntax error in SQL statement "SELECT FROM CUSTOMER WHERE[*] EMAIL = 'err2315@rit.edu'; "; expected "., (, USE, AS, RIGHT, LEFT, FULL, INNER, JOIN, CROSS, NATURAL, ,, SELECT"; SQL statement:
+select from customer where email = 'err2315@rit.edu'; [42001-197]
+2019-04-11 15:44:33 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLException: Syntax error in SQL statement "SELECT FROM CUSTOMER WHERE[*] ADDR_LINE1 = '60 Colony Manor Drive' AND ADDR_LINE2 = 'apt 109' AND CITY = 'Rochester' AND PROVINCE = 'New York' AND ZIPCODE = '14623' AND COUNTRY = 'USA' ; "; expected "., (, USE, AS, RIGHT, LEFT, FULL, INNER, JOIN, CROSS, NATURAL, ,, SELECT"; SQL statement:
+select from customer where addr_line1 = '60 Colony Manor Drive' and addr_line2 = 'apt 109' and city = 'Rochester' and province = 'New York' and zipcode = '14623' and country = 'USA' ; [42001-197]
+2019-04-11 15:45:30 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLException: Syntax error in SQL statement "UPDATE CUSTOMER SET ADDR_LINE1 = '60 Colony Manor Drive' SET[*] ADDR_LINE2 = 'apt 109' SET CITY = 'Rochester' SET PROVINCE = 'New York' SET ZIPCODE = '14623' SET COUNTRY = 'USA' WHERE ID = 401 "; SQL statement:
+update customer set addr_line1 = '60 Colony Manor Drive' set addr_line2 = 'apt 109' set city = 'Rochester' set province = 'New York' set zipcode = '14623' set country = 'USA' where ID = 401 [42000-197]
+2019-04-11 15:47:08 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLException: Syntax error in SQL statement "UPDATE CUSTOMER SET ADDR_LINE1 = '60 Colony Manor Drive', ADDR_LINE2 = 'apt 109', CITY = 'Rochester', PROVINCE = 'New York', ZIPCODE = '14623', COUNTRY = 'USA', WHERE[*] ID = 401 "; expected "identifier"; SQL statement:
+update customer set addr_line1 = '60 Colony Manor Drive', addr_line2 = 'apt 109', city = 'Rochester', province = 'New York', zipcode = '14623', country = 'USA', where ID = 401 [42001-197]
+2019-04-11 15:50:41 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLException: Syntax error in SQL statement "UPDATE CUSTOMER SETADDR_LINE1 =[*] '60 Colony Manor Drive', ADDR_LINE2 = 'apt 109', CITY = 'Rochester', PROVINCE = 'New York', ZIPCODE = '14623', COUNTRY = 'USA' WHERE ID = 401 "; expected "SET"; SQL statement:
+update customer setaddr_line1 = '60 Colony Manor Drive', addr_line2 = 'apt 109', city = 'Rochester', province = 'New York', zipcode = '14623', country = 'USA' where ID = 401 [42001-197]
+2019-04-11 15:51:09 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLException: Syntax error in SQL statement "UPDATE CUSTOMER SETADDR_LINE1 =[*] '60 Colony Manor Drive',   ADDR_LINE2 = 'apt 109',   CITY = 'Rochester',         PROVINCE = 'New York',     ZIPCODE = '14623',      COUNTRY = 'USA'       WHERE ID = 401 ;       "; expected "SET"; SQL statement:
+update customer setaddr_line1 = '60 Colony Manor Drive',   addr_line2 = 'apt 109',   city = 'Rochester',         province = 'New York',     zipcode = '14623',      country = 'USA'       where ID = 401 ;       [42001-197]
