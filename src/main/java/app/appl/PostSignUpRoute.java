@@ -5,8 +5,6 @@ import spark.Request;
 import spark.Response;
 import spark.Route;
 
-import java.lang.invoke.LambdaConversionException;
-
 public class PostSignUpRoute implements Route {
 
     @Override
