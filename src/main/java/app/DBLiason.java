@@ -1,6 +1,7 @@
 
 package app;
 
+
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
@@ -374,7 +375,7 @@ public class DBLiason {
     private static void addCustomerByInfo( String lastName, String firstName, String email, String password ) throws SQLException {
         // Add a customer with only an email, password, lastname, and firstname
 
-        String valuesFmt = "%d,%s,%s,%s, %s"; // Put parameters into a String
+        String valuesFmt = "%d,%s,%s,%s,%s"; // Put parameters into a String
         String rowFmt = "%1, '%4', '%5', '%2', '%3', null, null, null, null, null, null";
         String insertCmdFmt = "insert into customer values (%s);";
 
@@ -499,17 +500,7 @@ public class DBLiason {
     }
 
 
-    /* General-purpose DB-accessing methods.
-     * Use these to implement all the different functionality that is shared between
-     * the graphical UI and the command-line UI.
-     */
-
-    public static void executeArbitrarySQL(String sql) throws SQLException {
-        // This utility, if used at all, will only be accessible to the sysadmin.
-        // I don't know if it's a good idea to have even then. We'll see.
-        // Also, it should probably return a ResultSet. - Evan (24 Mar 2019)
-        statement.execute(sql);
-    }
+    /* Methods to get pretty-prints of various tables and subset of tables */
 
     public static String prettyPackageList() {
         // Return a String of a newline-separated list of all the packages in the DB
@@ -557,6 +548,34 @@ public class DBLiason {
         }
     }
 
+    public static String prettyEmailPasswordList() {
+        // Return a String of a newline-separated list of all email and password combinations
+
+        ArrayList<String> prettified;
+
+        try {
+            ResultSet packages = statement.executeQuery("select email, password from customer");
+            prettified = prettifyResultSet( "%(s,email), %(s,password)", packages );
+            return asLines(prettified);
+        } catch(SQLException sqle) {
+            sqle.printStackTrace();
+            return "<SQL error>";
+        }
+    }
+
+
+    /* General-purpose DB-accessing methods.
+     * Use these to implement all the different functionality that is shared between
+     * the graphical UI and the command-line UI.
+     */
+
+    public static void executeArbitrarySQL(String sql) throws SQLException {
+        // This utility, if used at all, will only be accessible to the sysadmin.
+        // I don't know if it's a good idea to have even then. We'll see.
+        // Also, it should probably return a ResultSet. - Evan (24 Mar 2019)
+        statement.execute(sql);
+    }
+
     public static ArrayList<String> getCreditCardsForCustomer( int ID ) throws SQLException {
 
         String sql = String.format("select card_num from customerHasCreditCard where customer_id = %d;", ID);
@@ -569,6 +588,24 @@ public class DBLiason {
         }
 
         return result;
+    }
+
+    public static boolean checkPassword( String email, String password ) throws SQLException {
+        // Return true if the customer with the given email has the given password
+        // ( Returns false if the password is incorrect or if no such customer exists )
+
+        String rowFmt = "%s,%s";
+        String cmdFmt = "select ID from customer where email = '%1' and password = '%2';";
+
+        String row = String.format( rowFmt, email, password );
+        String cmd = formatInputRow( row, cmdFmt );
+
+        ResultSet rs = statement.executeQuery( cmd );
+
+        if( rs.first() ) // If there exists a customer with this email and password, the password is correct
+            return true;
+
+        return false;
     }
 
 
@@ -598,7 +635,6 @@ public class DBLiason {
         try {
             addCustomerByInfo(last_name, first_name, email, password);
             addCustomerByAddr(addr_line1, addr_line2, city, province, zipcode, country);
-            
             linkAddress(email, addr_line1, addr_line2, city, province, zipcode, country);
         } catch (SQLException sqle) {
             sqle.printStackTrace();
@@ -611,9 +647,15 @@ public class DBLiason {
         System.out.println(prettyCustomerAddressList());
 
         try {
-            getLatePackages();
+            System.out.println();
+            System.out.println("Evan's password is \"password\":       " + checkPassword( "err2315@rit.edu", "password" ));
+            System.out.println("Evan's password is \"evan-is-great\":  " + checkPassword( "err2315@rit.edu", "evan-is-great"));
+            System.out.println("Trying with incorrect email address: " + checkPassword( "err2315@g.rit.edu", "evan-is-great"));
         } catch(SQLException sqle) {
             sqle.printStackTrace();
         }
+
+        System.out.println("\nEMAILS/PASSWORDS:");
+        System.out.println(prettyEmailPasswordList());
     }
 }

@@ -1022,3 +1022,20 @@ insert into customer values (1, 'ben_newman73@comcast.net', password, 'Newman', 
 	at app.DBLiason.setupCustomerTable(DBLiason.java:132)
 	at app.DBLiason.setupDB(DBLiason.java:65)
 	at app.DBLiason.main(DBLiason.java:587)
+2019-04-11 17:41:21 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLException: Column "PASSOWRD" not found; SQL statement:
+select ID from customer where email = 'err2315@rit.edu' and passowrd = 'password'; [42122-197]
+	at org.h2.message.DbException.getJdbcSQLException(DbException.java:357)
+	at org.h2.message.DbException.get(DbException.java:179)
+	at org.h2.message.DbException.get(DbException.java:155)
+	at org.h2.expression.ExpressionColumn.optimize(ExpressionColumn.java:150)
+	at org.h2.expression.Comparison.optimize(Comparison.java:177)
+	at org.h2.expression.ConditionAndOr.optimize(ConditionAndOr.java:131)
+	at org.h2.command.dml.Select.prepare(Select.java:861)
+	at org.h2.command.Parser.prepareCommand(Parser.java:283)
+	at org.h2.engine.Session.prepareLocal(Session.java:611)
+	at org.h2.engine.Session.prepareCommand(Session.java:549)
+	at org.h2.jdbc.JdbcConnection.prepareCommand(JdbcConnection.java:1247)
+	at org.h2.jdbc.JdbcStatement.executeQuery(JdbcStatement.java:78)
+	at app.DBLiason.checkPassword(DBLiason.java:587)
+	at app.DBLiason.main(DBLiason.java:634)
