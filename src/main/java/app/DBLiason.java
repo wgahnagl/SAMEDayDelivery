@@ -30,7 +30,7 @@ public class DBLiason {
     private static final Statement statement;
 
     // Initialization of the above two variables (a stupid hack to work around the fact
-    // that they variables are final, yet their initialization can throw an Exception)
+    // that the variables are final, yet their initialization can throw an Exception)
     static {
         Connection connectionTemp = null;
         Statement statementTemp = null;
@@ -101,15 +101,16 @@ public class DBLiason {
 
                 ");");
     }
-
     private static void setupCustomerTable() throws SQLException {
         statement.execute("drop table customer if exists;");
         statement.execute("create table customer (" +
                 "ID int primary key," +
 
+                "email varchar(255)," +
+                "password varchar(255)," +
+
                 "last_name varchar(255)," +
                 "first_name varchar(255)," +
-                "email varchar(255)," +
 
                 "addr_line1 varchar(1024)," + // You wouldn't think addresses could get this long, but they can.
                 "addr_line2 varchar(1024)," +
@@ -123,10 +124,14 @@ public class DBLiason {
                 ");"
         );
 
-        // No addr_line2's in the csv, so put in null
-        populateTableFromCSV("customer", "Phase 2/customerLastFirst.csv", "%1, '%2', '%3', '%4', '%5', null, '%6', '%7', '%8', '%9'");
-    }
+        // CSV Order: ID, lastname, firstname, email, addr_line1, city, province, zip_code, country
+        // The CSV does not contain some columns, so default values should be used:
+        //    addr_line2: null
+        //    password:   "password"
 
+        populateTableFromCSV("customer", "Phase 2/customerLastFirst.csv",
+                "%1, '%4', 'password', '%2', '%3', '%5', null, '%6', '%7', '%8', '%9'");
+    }
     private static void setupTripTable() throws SQLException {
         statement.execute("drop table trip if exists;");
         statement.execute("create table trip(" +
@@ -147,7 +152,6 @@ public class DBLiason {
 
                 ");");
     }
-
     private static void setupCarrierTable() throws SQLException {
         statement.execute("drop table carrier if exists");
         statement.execute("create table carrier(" +
@@ -155,7 +159,6 @@ public class DBLiason {
                 "type varchar(255), " +
                 ");");
     }
-
     private static void setupWarehouseTable() throws SQLException {
         statement.execute("drop table warehouse if exists;");
         statement.execute("create table warehouse(" +
@@ -169,7 +172,6 @@ public class DBLiason {
         // ID,addr_line1,city,province,country
         populateTableFromCSV( "Warehouse", "Phase 2/warehouse.csv", "%1, '%2', '%3', '%4', '%5'" );
     }
-
     private static void setupSpecialInfoTable() throws SQLException {
         statement.execute("drop table specialInfo if exists;");
         statement.execute("create table specialinfo(" +
@@ -177,7 +179,6 @@ public class DBLiason {
                 "info varchar(255), " +
                 ");");
     }
-
     private static void setupCustomerHasPhoneTable() throws SQLException {
         statement.execute("drop table customerHasPhone if exists");
         statement.execute("create table customerHasPhone(" +
@@ -188,7 +189,6 @@ public class DBLiason {
                 "foreign key (customer_id) references customer(ID), " +
                 ");");
     }
-
     private static void setupCustomerHasBankAccountTable() throws SQLException {
         statement.execute("drop table customerHasBankAccount if exists");
         statement.execute("create table customerHasBankAccount(" +
@@ -199,7 +199,6 @@ public class DBLiason {
                 "foreign key (customer_id) references customer(ID), " +
                 ");");
     }
-
     private static void setupCustomerHasCreditCardTable() throws SQLException {
         statement.execute("drop table customerHasCreditCard if exists");
         statement.execute("create table customerHasCreditCard(" +
@@ -210,7 +209,6 @@ public class DBLiason {
                 "foreign key (customer_id) references customer(ID), " +
                 ");");
     }
-
     private static void setupPackageHasSpecialInfoTable() throws SQLException {
         statement.execute("drop table packageHasSpecialInfo if exists");
         statement.execute("create table packageHasSpecialInfo(" +
@@ -364,9 +362,7 @@ public class DBLiason {
 
 
     /* Manipulations of the customer table
-     *    Create account:            addCustomerByInfo()
-     *    Add customer from package: addCustomerByAddr()
-     *    Link address:              linkAddress()
+     * LOW-LEVEL FUNCTIONS ONLY: LINK UI TO THESE FUNCTIONS WITH CAUTION, IF AT ALL
      */
 
     private static int currentMaxCustomerID() throws SQLException {
@@ -375,14 +371,16 @@ public class DBLiason {
         return maxIdResult.getInt("MAX(ID)");
     }
         
-    private static void addCustomerByInfo( String lastName, String firstName, String email ) throws SQLException {
-        String valuesFmt = "%d,%s,%s,%s"; // Put parameters into a String
-        String rowFmt = "%1, '%2', '%3', '%4', null, null, null, null, null, null";
+    private static void addCustomerByInfo( String lastName, String firstName, String email, String password ) throws SQLException {
+        // Add a customer with only an email, password, lastname, and firstname
+
+        String valuesFmt = "%d,%s,%s,%s, %s"; // Put parameters into a String
+        String rowFmt = "%1, '%4', '%5', '%2', '%3', null, null, null, null, null, null";
         String insertCmdFmt = "insert into customer values (%s);";
 
         int maxID = currentMaxCustomerID();
         
-        String values = String.format( valuesFmt, maxID + 1, lastName, firstName, email );
+        String values = String.format( valuesFmt, maxID + 1, lastName, firstName, email, password );
         String row = formatInputRow( values, rowFmt );
         String insertCmd = String.format( insertCmdFmt, row );
 
@@ -390,8 +388,10 @@ public class DBLiason {
     }
 
     private static void addCustomerByAddr( String addr_line1, String addr_line2,String city, String province, String zipcode, String country ) throws SQLException {
+        // Add a null customer with only an address (no email, password, lastname, or firstname)
+
         String valuesFmt = "%d,%s,%s,%s,%s,%s,%s";
-        String rowFmt = "%1, null, null, null, '%2', '%3', '%4', '%5', '%6', '%7'";
+        String rowFmt = "%1, null, null, null, null, '%2', '%3', '%4', '%5', '%6', '%7'";
         String insertCmdFmt = "insert into customer values (%s);";
 
         int maxID = currentMaxCustomerID();
@@ -405,8 +405,11 @@ public class DBLiason {
     }
 
     private static int getCustomerByEmail( String email ) throws SQLException {
+        // Return the ID of a customer with a given email address, or -1 if no such customer is found
+        // (There should never be more than one customer with the same email address)
+
         String valuesFmt = "%s";
-        String cmdFmt = "select * from customer where email = '%1';";
+        String cmdFmt = "select ID from customer where email = '%1';";
 
         String values = String.format( valuesFmt, email );
         String cmd = formatInputRow( values, cmdFmt );
@@ -417,8 +420,11 @@ public class DBLiason {
     }   
     
     private static int getCustomerByAddr( String addr_line1, String addr_line2, String city, String province, String zipcode, String country ) throws SQLException {
+        // Return the ID of the customer with a given address, or -1 if no such customer is found
+        // (There should never (?) be more than one customer with the same address)
+
         String valuesFmt = "%s,%s,%s,%s,%s,%s";
-        String cmdFmt = "select * from customer where " +
+        String cmdFmt = "select ID from customer where " +
             "addr_line1 = '%1' and " +
             "addr_line2 = '%2' and " +
             "city = '%3' and " +
@@ -437,6 +443,10 @@ public class DBLiason {
     }
 
     private static boolean linkAddress( String email, String addr_line1, String addr_line2, String city, String province, String zipcode, String country ) throws SQLException {
+        // Find the customer with the given email and fill in their address as the given address
+        // If there exists a null customer with the given address, delete it
+        // Todo: Also update all other tables to relink addrID to emailID
+
         // TODO (Or maybe it can be left alone)
         // This method is written with the admittedly naive assumption that the customer
         // was honest (and not mistaken) about their address. If it finds a customer A with
@@ -445,13 +455,12 @@ public class DBLiason {
         // address of some other customer, that customer will be deleted (!).
 
         int emailID = getCustomerByEmail( email );
-        int addrID = getCustomerByAddr( addr_line1, addr_line2, city,
-                                        province, zipcode, country );
+        int addrID = getCustomerByAddr( addr_line1, addr_line2, city, province, zipcode, country );
 
-        if(emailID < 0) // Existing customer not found
+        if(emailID < 0) // Acting customer not found = Error
             return false;
 
-        if( emailID == addrID ) // This could mean either that the address is already linked (or something else)
+        if( emailID == addrID ) // This could mean either that the address is already linked (or something else) = Error
             return false;
 
 
@@ -474,7 +483,6 @@ public class DBLiason {
 
 
         // Delete any null customers
-        // Todo: Also update all other tables to relink addrID to emailID
 
         if( addrID < 0 )
             return true; // No need to raise error just because no address was deleted
@@ -490,8 +498,7 @@ public class DBLiason {
         return true;
     }
 
-        
-    
+
     /* General-purpose DB-accessing methods.
      * Use these to implement all the different functionality that is shared between
      * the graphical UI and the command-line UI.
@@ -565,6 +572,7 @@ public class DBLiason {
     }
 
 
+    /* Specific query utilities */
 
     public static ResultSet getLatePackages() throws SQLException {
         return statement.executeQuery("select * from package where delivery_timestamp is null and expected_delivery < current_timestamp");
@@ -579,6 +587,7 @@ public class DBLiason {
         String first_name = "Evan";
         String last_name = "Rysdam";
         String email = "err2315@rit.edu";
+        String password = "evan-is-great";
         String addr_line1 = "60 Colony Manor Drive";
         String addr_line2 = "apt 109";
         String city = "Rochester";
@@ -587,7 +596,7 @@ public class DBLiason {
         String country = "USA";
 
         try {
-            addCustomerByInfo(last_name, first_name, email);
+            addCustomerByInfo(last_name, first_name, email, password);
             addCustomerByAddr(addr_line1, addr_line2, city, province, zipcode, country);
             
             linkAddress(email, addr_line1, addr_line2, city, province, zipcode, country);
