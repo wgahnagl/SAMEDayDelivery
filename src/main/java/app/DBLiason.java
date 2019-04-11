@@ -64,10 +64,10 @@ public class DBLiason {
             setupCustomerTable();
             setupPackageTable();
 
-            setupCustomerHasBankAccountTable();
-            setupCustomerHasCreditCardTable();
-            setupCustomerHasPhoneTable();
-            setupPackageHasSpecialInfoTable();
+            setupCustomerBankAccountTable();
+            setupCustomerCreditCardTable();
+            setupCustomerPhoneTable();
+            setupPackageSpecialInfoTable();
 
         } catch(SQLException sqle) {
             sqle.printStackTrace();
@@ -77,8 +77,8 @@ public class DBLiason {
     }
 
     private static void setupPackageTable() throws SQLException {
-        statement.execute("drop table package if exists;");
-        statement.execute("create table package (" +
+        statement.execute("drop table Package if exists;");
+        statement.execute("create table Package (" +
                 "ID                   int primary key," +
 
                 "origin_customer_id   int," +     // origin_customer_id and dest_customer_id are both
@@ -95,15 +95,15 @@ public class DBLiason {
                 "price                numeric(6,2), " + // Price in dollars, up to $9999 and accurate to the cent
                 "signature            image, " +
 
-                "foreign key (origin_customer_id) references customer(id)," +
-                "foreign key (dest_customer_id) references customer(id)" +
+                "foreign key (origin_customer_id) references Customer(id)," +
+                "foreign key (dest_customer_id) references Customer(id)" +
 
                 ");");
     }
 
     private static void setupCustomerTable() throws SQLException {
-        statement.execute("drop table customer if exists;");
-        statement.execute("create table customer (" +
+        statement.execute("drop table Customer if exists;");
+        statement.execute("create table Customer (" +
                 "ID int primary key," +
 
                 "last_name varchar(255)," +
@@ -124,8 +124,8 @@ public class DBLiason {
     }
 
     private static void setupTripTable() throws SQLException {
-        statement.execute("drop table trip if exists;");
-        statement.execute("create table trip(" +
+        statement.execute("drop table Trip if exists;");
+        statement.execute("create table Trip(" +
                 "ID int primary key, " +
 
                 "start_time timestamp, " +
@@ -137,24 +137,24 @@ public class DBLiason {
                 "carrier int, " +
                 "fail_flag bit, " +
 
-                "foreign key (origin) references warehouse(id), " +
-                "foreign key (destination) references warehouse(id), " +
-                "foreign key (carrier) references carrier(id)" +
+                "foreign key (origin) references Warehouse(id), " +
+                "foreign key (destination) references Warehouse(id), " +
+                "foreign key (carrier) references Carrier(id)" +
 
                 ");");
     }
 
     private static void setupCarrierTable() throws SQLException {
-        statement.execute("drop table carrier if exists");
-        statement.execute("create table carrier(" +
+        statement.execute("drop table Carrier if exists");
+        statement.execute("create table Carrier(" +
                 "ID int primary key, " +
                 "type varchar(255), " +
                 ");");
     }
 
     private static void setupWarehouseTable() throws SQLException {
-        statement.execute("drop table warehouse if exists;");
-        statement.execute("create table warehouse(" +
+        statement.execute("drop table Warehouse if exists;");
+        statement.execute("create table Warehouse(" +
                 "ID int primary key, " +
                 "address_line1 varchar(255), " +
                 "city varchar(255), " +
@@ -167,27 +167,27 @@ public class DBLiason {
     }
 
     private static void setupSpecialInfoTable() throws SQLException {
-        statement.execute("drop table specialInfo if exists;");
-        statement.execute("create table specialinfo(" +
+        statement.execute("drop table SpecialInfo if exists;");
+        statement.execute("create table SpecialInfo(" +
                 "ID int primary key, " +
                 "info varchar(255), " +
                 ");");
     }
 
-    private static void setupCustomerHasPhoneTable() throws SQLException {
-        statement.execute("drop table customerHasPhone if exists");
-        statement.execute("create table customerHasPhone(" +
+    private static void setupCustomerPhoneTable() throws SQLException {
+        statement.execute("drop table CustomerPhone if exists");
+        statement.execute("create table CustomerPhone(" +
                 "customer_id int, " +
                 "phone_num varchar(255), " +
 
                 "primary key (customer_id, phone_num), "  +
-                "foreign key (customer_id) references customer(ID), " +
+                "foreign key (customer_id) references Customer(ID), " +
                 ");");
     }
 
-    private static void setupCustomerHasBankAccountTable() throws SQLException {
-        statement.execute("drop table customerBankAccount if exists");
-        statement.execute("create table customerBankAccount(" +
+    private static void setupCustomerBankAccountTable() throws SQLException {
+        statement.execute("drop table CustomerBankAccount if exists");
+        statement.execute("create table CustomerBankAccount(" +
                 "customer_id int, " +
                 "acct_number varchar(255)," +
 
@@ -196,26 +196,26 @@ public class DBLiason {
                 ");");
     }
 
-    private static void setupCustomerHasCreditCardTable() throws SQLException {
-        statement.execute("drop table customerHasCreditCard if exists");
-        statement.execute("create table customerHasCreditCard(" +
+    private static void setupCustomerCreditCardTable() throws SQLException {
+        statement.execute("drop table customerCreditCard if exists");
+        statement.execute("create table customerCreditCard(" +
                 "customer_id int, " +
                 "card_num varchar(255)," +
 
                 "primary key (customer_id, card_num)," +
-                "foreign key (customer_id) references customer(ID), " +
+                "foreign key (customer_id) references Customer(ID), " +
                 ");");
     }
 
-    private static void setupPackageHasSpecialInfoTable() throws SQLException {
-        statement.execute("drop table packageHasSpecialInfo if exists");
-        statement.execute("create table packageHasSpecialInfo(" +
+    private static void setupPackageSpecialInfoTable() throws SQLException {
+        statement.execute("drop table PackageSpecialInfo if exists");
+        statement.execute("create table PackageSpecialInfo(" +
                 "package_id int, " +
                 "special_info_id int," +
 
                 "primary key (package_id, special_info_id)," +
-                "foreign key (package_id) references package(ID), " +
-                "foreign key (special_info_id) references specialInfo(ID), " +
+                "foreign key (package_id) references Package(ID), " +
+                "foreign key (special_info_id) references SpecialInfo(ID), " +
                 ");");
     }
 
@@ -335,9 +335,9 @@ public class DBLiason {
 
         String valuesFmt = "%d,%s,%s,%s,%s,%s,%s,%s,%s,%s"; // Put the parameters into a String
         String rowFmt = "%1, '%2', '%3', '%4', '%5', '%6', '%7', '%8', '%9', '%10'"; // Format that String into a values list
-        String insertCmdFmt = "insert into customer values (%s);"; // Put that values list into an sql statement
+        String insertCmdFmt = "insert into Customer values (%s);"; // Put that values list into an sql statement
 
-        ResultSet maxIdResult = statement.executeQuery("select max(ID) from customer;");
+        ResultSet maxIdResult = statement.executeQuery("select max(ID) from Customer;");
         maxIdResult.first();
         int maxID = maxIdResult.getInt("MAX(ID)");
 
@@ -346,6 +346,12 @@ public class DBLiason {
         String insertCmd = String.format( insertCmdFmt, row );
 
         statement.execute(insertCmd);
+    }
+
+    public static void addCreditCard (String name, String number, String expiration, String CVV){
+        String valuesFMT = "%d, %s,%s, %s, %s";
+        String rowFMT = "%1, %2, %3, %4";
+        String insertCmdFmt = "insert into creditCard values (%s);";
     }
 
     // Todo: Generalize prettyPackageList and prettyCustomerList into prettyResults(ResultSet result, String format)
@@ -358,7 +364,7 @@ public class DBLiason {
 
         try {
             String result = "";
-            ResultSet packages = statement.executeQuery("select ID, ship_timestamp from package");
+            ResultSet packages = statement.executeQuery("select ID, ship_timestamp from Package");
 
             while(packages.next()) {
                 int nextID = packages.getInt("ID");
@@ -380,7 +386,7 @@ public class DBLiason {
 
         try {
             String result = "";
-            ResultSet customers = statement.executeQuery("select ID, last_name, first_name from customer");
+            ResultSet customers = statement.executeQuery("select ID, last_name, first_name from Customer");
 
             while(customers.next()) {
                 int nextID = customers.getInt("ID");
@@ -399,7 +405,7 @@ public class DBLiason {
 
     public static ArrayList<String> getCreditCardsForCustomer( int ID ) throws SQLException {
 
-        String sql = String.format("select card_num from customerHasCreditCard where customer_id = %d;", ID);
+        String sql = String.format("select card_num from CustomerCreditCard where customer_id = %d;", ID);
         ResultSet rs = statement.executeQuery(sql);
 
         ArrayList<String> result = new ArrayList<>();
@@ -414,7 +420,7 @@ public class DBLiason {
 
 
     public static ResultSet getLatePackages() throws SQLException {
-        return statement.executeQuery("select * from package where delivery_timestamp is null and expected_delivery < current_timestamp");
+        return statement.executeQuery("select * from Package where delivery_timestamp is null and expected_delivery < current_timestamp");
     }
 
 

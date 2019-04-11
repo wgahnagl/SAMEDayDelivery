@@ -1,4 +1,4 @@
 <!DOCTYPE html>
 <#include "components/header.ftl">
-Home
-</html>hmm
+well that's sad :(
+</html>

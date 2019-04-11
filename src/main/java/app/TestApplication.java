@@ -58,9 +58,9 @@ public class TestApplication {
             ResultSet allVisits = stmt.executeQuery(sql);
 
             // Create display-friendly table
-            while(allVisits.next()) {
+            while (allVisits.next()) {
                 // Retrieve by column name
-                int printID  = allVisits.getInt("id");
+                int printID = allVisits.getInt("id");
                 String printAddress = allVisits.getString("address");
                 int printTimeStamp = allVisits.getInt("timestamp");
 
@@ -70,21 +70,21 @@ public class TestApplication {
             }
             allVisits.close();
 
-        } catch(SQLException se) {
+        } catch (SQLException se) {
             // Handle errors for JDBC
             return se.getMessage();
-        } catch(Exception e) {
+        } catch (Exception e) {
             // Handle errors for Class.forName
             return e.getMessage();
         } finally {
             // finally block used to close resources
             try {
-                if(stmt != null) stmt.close();
-            } catch(SQLException se2) {
+                if (stmt != null) stmt.close();
+            } catch (SQLException se2) {
             } // nothing we can do
             try {
-                if(conn != null) conn.close();
-            } catch(SQLException se) {
+                if (conn != null) conn.close();
+            } catch (SQLException se) {
                 se.printStackTrace();
             } // end finally try
         } // end try
@@ -92,16 +92,13 @@ public class TestApplication {
         return printedTable;
     }
 
-    public static void main(String[] args) {
-        /*get("/", (req, res) ->
-                String.format("<pre>h--hewwo??? owo;;; mistew posteman???"
-                        + "<br/><br/>"
-                        + "Anyway, here's your recent visits:"
-                        + "<br/><br/>%s",
-
-                        addVisit("null")));*/
-
-        // Sandbox testing
-        System.out.println("A'B''C".replaceAll("'", "''"));
-    }
+//    public static void main(String[] args) {
+//        get("/", (req, res) ->
+//                String.format("<pre>h--hewwo??? owo;;; mistew posteman???"
+//                        + "<br/><br/>"
+//                        + "Anyway, here's your recent visits:"
+//                        + "<br/><br/>%s",
+//
+//                        addVisit("null")));
+//    }
 }

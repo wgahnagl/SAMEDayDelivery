@@ -2,14 +2,18 @@ package app.ui;
 import static spark.Spark.*;
 
 import java.util.Objects;
-import java.util.logging.Logger;
 
+import app.appl.PostSignUpRoute;
 import spark.TemplateEngine;
 
 public class WebServer {
-    private static final Logger LOG = Logger.getLogger(WebServer.class.getName());
 
     public static final String HOME_URL = "/";
+    public static final String SIGNIN_URL = "/signin";
+    public static final String SIGNUP_URL = "/signup";
+    public static final String TRACKING_URL = "/tracking";
+    public static final String ACCOUNT_URL = "/account";
+    public static final String FORGOT_PASSWORD_URL = "/password_recover";
 
     private final TemplateEngine templateEngine;
 
@@ -21,7 +25,12 @@ public class WebServer {
     public void initialize() {
         staticFileLocation("/public");
         get(HOME_URL, new GetHomeRoute(templateEngine));
-        LOG.config("WebServer is initialized.");
+        get(SIGNIN_URL, new GetSignInRoute(templateEngine));
+        get(SIGNUP_URL, new GetSignUpRoute(templateEngine));
+        post(SIGNUP_URL, new PostSignUpRoute());
+        get(TRACKING_URL, new GetTrackingRoute(templateEngine));
+        get(ACCOUNT_URL, new GetAccountRoute(templateEngine));
+        get(FORGOT_PASSWORD_URL, new GetPasswordRecoverRoute(templateEngine));
     }
 
 }
