@@ -1039,3 +1039,28 @@ select ID from customer where email = 'err2315@rit.edu' and passowrd = 'password
 	at org.h2.jdbc.JdbcStatement.executeQuery(JdbcStatement.java:78)
 	at app.DBLiason.checkPassword(DBLiason.java:587)
 	at app.DBLiason.main(DBLiason.java:634)
+2019-04-12 10:36:31 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLException: Syntax error in SQL statement "INSERT INTO CUSTOMERHASCREDITCARD VALUES (ERR2315@[*]RIT.EDU, 1); "; expected "., (, [, ::, *, /, %, +, -, ||, ~, !~, NOT, LIKE, ILIKE, REGEXP, IS, IN, BETWEEN, AND, OR, ,, )"; SQL statement:
+insert into customerHasCreditCard values (err2315@rit.edu, 1); [42001-197]
+2019-04-12 10:36:49 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLException: Data conversion error converting "'err2315@rit.edu' (CUSTOMERHASCREDITCARD: CUSTOMER_ID INT NOT NULL)"; SQL statement:
+insert into customerHasCreditCard values ('err2315@rit.edu', '1') -- ('err2315@rit.edu', '1') [22018-197]
+2019-04-12 10:42:15 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLException: Syntax error in SQL statement "SELECT CARD_NUM FROM CUSTOMERHASCREDITCARD WHERE EMAIL = ERR2315@[*]RIT.EDU; "; SQL statement:
+select card_num from customerHasCreditCard where email = err2315@rit.edu; [42000-197]
+2019-04-12 10:43:17 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLException: Column "ID" not found; SQL statement:
+select card_num from customerHasCreditCard where id = 401; [42122-197]
+	at org.h2.message.DbException.getJdbcSQLException(DbException.java:357)
+	at org.h2.message.DbException.get(DbException.java:179)
+	at org.h2.message.DbException.get(DbException.java:155)
+	at org.h2.expression.ExpressionColumn.optimize(ExpressionColumn.java:150)
+	at org.h2.expression.Comparison.optimize(Comparison.java:177)
+	at org.h2.command.dml.Select.prepare(Select.java:861)
+	at org.h2.command.Parser.prepareCommand(Parser.java:283)
+	at org.h2.engine.Session.prepareLocal(Session.java:611)
+	at org.h2.engine.Session.prepareCommand(Session.java:549)
+	at org.h2.jdbc.JdbcConnection.prepareCommand(JdbcConnection.java:1247)
+	at org.h2.jdbc.JdbcStatement.executeQuery(JdbcStatement.java:78)
+	at app.DBLiason.getCreditCardsForCustomer(DBLiason.java:603)
+	at app.DBLiason.main(DBLiason.java:687)

@@ -95,6 +95,8 @@ public class DBLiason {
                 "weight               numeric(7,3)," + // Weight in kilograms, up to 9999 kg and accurate to the gram
 
                 "price                numeric(6,2), " + // Price in dollars, up to $9999 and accurate to the cent
+                "receiver_pays        boolean, " + // True if package is "pre-paid" (receiver pays)
+                "paid_for             boolean, " + // True when the package has been paid for (can be false for monthly-billed customers)
                 "signature            image, " +
 
                 "foreign key (origin_customer_id) references customer(id)," +
@@ -113,6 +115,8 @@ public class DBLiason {
                 "last_name varchar(255)," +
                 "first_name varchar(255)," +
 
+                "bank_account varchar(255)," + // If this exists, then it is charged with monthly bills
+
                 "addr_line1 varchar(1024)," + // You wouldn't think addresses could get this long, but they can.
                 "addr_line2 varchar(1024)," +
                 "city varchar(255)," +
@@ -127,11 +131,12 @@ public class DBLiason {
 
         // CSV Order: ID, lastname, firstname, email, addr_line1, city, province, zip_code, country
         // The CSV does not contain some columns, so default values should be used:
-        //    addr_line2: null
-        //    password:   "password"
+        //    password:     "password"
+        //    bank_account: null
+        //    addr_line2:   null
 
         populateTableFromCSV("customer", "Phase 2/customerLastFirst.csv",
-                "%1, '%4', 'password', '%2', '%3', '%5', null, '%6', '%7', '%8', '%9'");
+                "%1, '%4', 'password', '%2', '%3', null, '%5', null, '%6', '%7', '%8', '%9'");
     }
     private static void setupTripTable() throws SQLException {
         statement.execute("drop table trip if exists;");
@@ -376,7 +381,7 @@ public class DBLiason {
         // Add a customer with only an email, password, lastname, and firstname
 
         String valuesFmt = "%d,%s,%s,%s,%s"; // Put parameters into a String
-        String rowFmt = "%1, '%4', '%5', '%2', '%3', null, null, null, null, null, null";
+        String rowFmt = "%1, '%4', '%5', '%2', '%3', null, null, null, null, null, null, null";
         String insertCmdFmt = "insert into customer values (%s);";
 
         int maxID = currentMaxCustomerID();
@@ -392,7 +397,7 @@ public class DBLiason {
         // Add a null customer with only an address (no email, password, lastname, or firstname)
 
         String valuesFmt = "%d,%s,%s,%s,%s,%s,%s";
-        String rowFmt = "%1, null, null, null, null, '%2', '%3', '%4', '%5', '%6', '%7'";
+        String rowFmt = "%1, null, null, null, null, null, '%2', '%3', '%4', '%5', '%6', '%7'";
         String insertCmdFmt = "insert into customer values (%s);";
 
         int maxID = currentMaxCustomerID();
@@ -499,6 +504,20 @@ public class DBLiason {
         return true;
     }
 
+    private static boolean linkCreditCard( String email, String card_num ) throws SQLException {
+        int id = getCustomerByEmail( email );
+        if(id < 0) return false;
+
+        String rowFmt = "%d,%s";
+        String cmdFmt = "insert into customerHasCreditCard values (%1, '%2');";
+
+        String row = String.format( rowFmt, id, card_num );
+        String cmd = formatInputRow( row, cmdFmt );
+
+        statement.execute( cmd );
+        return true;
+    }
+
 
     /* Methods to get pretty-prints of various tables and subset of tables */
 
@@ -576,9 +595,11 @@ public class DBLiason {
         statement.execute(sql);
     }
 
-    public static ArrayList<String> getCreditCardsForCustomer( int ID ) throws SQLException {
+    public static ArrayList<String> getCreditCardsForCustomer( String email ) throws SQLException {
+        int id = getCustomerByEmail( email );
+        if(id < 0) return null;
 
-        String sql = String.format("select card_num from customerHasCreditCard where customer_id = %d;", ID);
+        String sql = String.format("select card_num from customerHasCreditCard where customer_id = %d;", id);
         ResultSet rs = statement.executeQuery(sql);
 
         ArrayList<String> result = new ArrayList<>();
@@ -655,7 +676,27 @@ public class DBLiason {
             sqle.printStackTrace();
         }
 
-        System.out.println("\nEMAILS/PASSWORDS:");
-        System.out.println(prettyEmailPasswordList());
+        try {
+            String evan = "err2315@rit.edu";
+            String des = "desiree310@verizon.net";
+
+            linkCreditCard(des, "4");
+            linkCreditCard(evan, "1");
+            linkCreditCard(des, "2");
+
+            ArrayList<String> evanCards = getCreditCardsForCustomer( evan );
+            ArrayList<String> skyCards = getCreditCardsForCustomer( des );
+
+            System.out.println();
+            System.out.print("Evan's cards:");
+            for(String s : evanCards) System.out.print(" " + s);
+
+            System.out.print("\nDes's cards:");
+            for(String s : skyCards) System.out.print(" " + s);
+            System.out.println();
+
+        } catch (SQLException sqle) {
+            sqle.printStackTrace();
+        }
     }
 }
