@@ -31,6 +31,11 @@ public class DBLiason {
     // Initialization of the above two variables (a stupid hack to work around the fact
     // that they variables are final, yet their initialization can throw an Exception)
     static {
+        try {
+            Class.forName ("org.h2.Driver");
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        }
         Connection connectionTemp = null;
         Statement statementTemp = null;
         try {
