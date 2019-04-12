@@ -64,6 +64,12 @@
             <version>2.3</version>
         </dependency>
 
+        <dependency>
+            <groupId>com.h2database</groupId>
+            <artifactId>h2</artifactId>
+            <version>1.4.197</version> <!-- ex: 1.2.140 -->
+        </dependency>
+
         <!-- Spark FreeMarker integration -->
         <dependency>
             <groupId>com.sparkjava</groupId>
