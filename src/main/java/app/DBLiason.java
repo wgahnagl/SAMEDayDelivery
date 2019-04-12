@@ -32,7 +32,7 @@ public class DBLiason {
     // that they variables are final, yet their initialization can throw an Exception)
     static {
         try {
-            Class.forName ("org.h2.Driver");
+            Class.forName (JDBC_DRIVER);
         } catch (ClassNotFoundException e) {
             e.printStackTrace();
         }
