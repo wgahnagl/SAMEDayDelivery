@@ -1064,3 +1064,6 @@ select card_num from customerHasCreditCard where id = 401; [42122-197]
 	at org.h2.jdbc.JdbcStatement.executeQuery(JdbcStatement.java:78)
 	at app.DBLiason.getCreditCardsForCustomer(DBLiason.java:603)
 	at app.DBLiason.main(DBLiason.java:687)
+2019-04-12 14:29:12 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLException: Syntax error in SQL statement "%[*]D "; SQL statement:
+%d [42000-197]

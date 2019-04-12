@@ -244,6 +244,8 @@ public class DBLiason {
         // way in getCustomerByAddress). Also, switch the arguments to be consistent
         // with the String.format() frame.
 
+        // Todo: Might want to use varargs, though then I'd need to manually cast args to strings before entering
+
         String[] values = valueList.split(",");
         String result = formatString;
 
@@ -505,6 +507,9 @@ public class DBLiason {
     }
 
     private static boolean linkCreditCard( String email, String card_num ) throws SQLException {
+        // Link a given customer account to a given credit card number (this DOES NOT delete previously-linked cards)
+        // Returns true on success, false on failure
+
         int id = getCustomerByEmail( email );
         if(id < 0) return false;
 
@@ -512,6 +517,23 @@ public class DBLiason {
         String cmdFmt = "insert into customerHasCreditCard values (%1, '%2');";
 
         String row = String.format( rowFmt, id, card_num );
+        String cmd = formatInputRow( row, cmdFmt );
+
+        statement.execute( cmd );
+        return true;
+    }
+
+    private static boolean linkBankAccount( String email, String acct_num ) throws SQLException {
+        // Link a given customer account to a bank account number (this DOES delete any previously-linked accounts)
+        // Returns true on success, false on failure
+
+        int id = getCustomerByEmail( email );
+        if(id < 0) return false;
+
+        String rowFmt = "%d,%s";
+        String cmdFmt = "update customer set bank_account = '%2' where id = %1";
+
+        String row = String.format( rowFmt, id, acct_num );
         String cmd = formatInputRow( row, cmdFmt );
 
         statement.execute( cmd );
@@ -611,6 +633,21 @@ public class DBLiason {
         return result;
     }
 
+    public static String getBankAccountForCustomer( String email ) throws SQLException {
+        int id = getCustomerByEmail( email );
+        if(id < 0) return null;
+
+        String rowFmt = "%d";
+        String cmdFmt = "select bank_account from customer where id = %1;";
+
+        String row = String.format( rowFmt, id );
+        String cmd = formatInputRow( row, cmdFmt );
+
+        ResultSet rs = statement.executeQuery( cmd );
+        rs.first();
+        return rs.getString("bank_account");
+    }
+
     public static boolean checkPassword( String email, String password ) throws SQLException {
         // Return true if the customer with the given email has the given password
         // ( Returns false if the password is incorrect or if no such customer exists )
@@ -684,6 +721,10 @@ public class DBLiason {
             linkCreditCard(evan, "1");
             linkCreditCard(des, "2");
 
+            linkBankAccount( evan, "99" );
+            linkBankAccount( des, "98" );
+            linkBankAccount( evan, "97" );
+
             ArrayList<String> evanCards = getCreditCardsForCustomer( evan );
             ArrayList<String> skyCards = getCreditCardsForCustomer( des );
 
@@ -694,6 +735,10 @@ public class DBLiason {
             System.out.print("\nDes's cards:");
             for(String s : skyCards) System.out.print(" " + s);
             System.out.println();
+
+            System.out.println();
+            System.out.println("Evan's bank account: " + getBankAccountForCustomer(evan));
+            System.out.println("Des's bank account: " + getBankAccountForCustomer(des));
 
         } catch (SQLException sqle) {
             sqle.printStackTrace();
