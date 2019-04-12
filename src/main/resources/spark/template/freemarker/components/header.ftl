@@ -23,6 +23,17 @@
         <#else>
             <#include "../customer/components/navbarContents.ftl">
         </#if>
+
+        <#if currentUser??>
+            <form class="form-inline my-2 my-lg-0" action="/signout" method="POST">
+                <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Sign Out</button>
+            </form>
+        <#else>
+            <a href="/signin">
+                <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Sign In</button>
+            </a>
+        </#if>
     </div>
+
 </nav>
 </body>

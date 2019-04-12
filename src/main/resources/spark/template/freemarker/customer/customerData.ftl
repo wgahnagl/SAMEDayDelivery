@@ -1,6 +1,6 @@
 <div class="row">
     <div class="col-md-12 order-md-1" >
-        <h4 class="mb-3">Billing address</h4>
+        <h4 class="mb-3">Account</h4>
         <form class="needs-validation" novalidate="">
             <div class="row">
                 <div class="col-md-6 mb-3">
@@ -27,6 +27,17 @@
                 </div>
             </div>
 
+            <div class = "mb-3">
+                <label for="password1">Password:</label>
+                <input id="password1" class = "form-control" type=password required name=up>
+                <label for="password2">Confirm password:</label>
+                <input id="password2" class="form-control" type=password name=up2>
+
+                <div class="invalid-feedback">
+                    Passwords must match
+                </div>
+            </div>
+            <h4 class="mb-3">Address</h4>
             <div class="row">
                 <div class="col-md-9 mb-3">
                     <label for="address">Address</label>
