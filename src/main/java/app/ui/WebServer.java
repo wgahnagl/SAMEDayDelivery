@@ -3,9 +3,7 @@ import static spark.Spark.*;
 
 import java.util.Objects;
 
-import app.appl.PostSignInRoute;
-import app.appl.PostSignOutRoute;
-import app.appl.PostSignUpRoute;
+import app.appl.*;
 import org.jcp.xml.dsig.internal.SignerOutputStream;
 import spark.TemplateEngine;
 
@@ -18,6 +16,10 @@ public class WebServer {
     public static final String TRACKING_URL = "/tracking";
     public static final String ACCOUNT_URL = "/account";
     public static final String FORGOT_PASSWORD_URL = "/password_recover";
+    public static final String GET_ADDRESS_DATA_URL = "/get_address_data";
+    public static final String ADD_CREDIT_CARD_URL = "/add_credit_card";
+    public static final String ADD_ADDRESS_URL  = "/add_address";
+
 
     private final TemplateEngine templateEngine;
 
@@ -31,12 +33,21 @@ public class WebServer {
         get(HOME_URL, new GetHomeRoute(templateEngine));
         get(SIGNIN_URL, new GetSignInRoute(templateEngine));
         get(SIGNUP_URL, new GetSignUpRoute(templateEngine));
+        get(FORGOT_PASSWORD_URL, new GetPasswordRecoverRoute(templateEngine));
+
+        get(TRACKING_URL, new GetTrackingRoute(templateEngine));
+        get(ACCOUNT_URL, new GetAccountRoute(templateEngine));
+        get(GET_ADDRESS_DATA_URL, new GetAddressRoute(templateEngine));
+        get(ADD_CREDIT_CARD_URL, new GetAddCreditCardRoute(templateEngine));
+        get(ADD_ADDRESS_URL, new GetAddAddressRoute(templateEngine));
+
         post(SIGNUP_URL, new PostSignUpRoute());
         post(SIGNIN_URL, new PostSignInRoute());
         post(SIGNOUT_URL, new PostSignOutRoute());
-        get(TRACKING_URL, new GetTrackingRoute(templateEngine));
-        get(ACCOUNT_URL, new GetAccountRoute(templateEngine));
-        get(FORGOT_PASSWORD_URL, new GetPasswordRecoverRoute(templateEngine));
+        post(ADD_CREDIT_CARD_URL, new PostAddCreditCardRoute());
+        post(ADD_ADDRESS_URL, new PostAddAddressRoute());
+
+
     }
 
 }

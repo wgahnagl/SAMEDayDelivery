@@ -1,6 +1,7 @@
 package app.appl;
 
 import app.DBLiason;
+import app.util.User;
 import spark.Request;
 import spark.Response;
 import spark.Route;
@@ -12,6 +13,8 @@ public class PostSignUpRoute implements Route {
         final String firstName = request.queryParams("firstName");
         final String lastName = request.queryParams("lastName");
         final String email = request.queryParams("email");
+        final String password = request.queryParams("password");
+
         final String address = request.queryParams("address");
         final String address2 = request.queryParams("address2");
         final String city = request.queryParams("city");
@@ -22,10 +25,11 @@ public class PostSignUpRoute implements Route {
         final String cc_number = request.queryParams("cc-number");
         final String cc_expiration = request.queryParams("cc-expiration");
         final String cc_cvv = request.queryParams("cc-cvv");
-
         DBLiason.addCustomer(lastName, firstName, email, address, address2, city, state, zip, country);
 
-        response.redirect("/");
+        request.session().attribute("currentUser", new User(email));
+
+        response.redirect("/account");
         return null;
     }
 }

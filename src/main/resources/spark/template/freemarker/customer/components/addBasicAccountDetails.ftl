@@ -30,7 +30,7 @@
         <label for="password1">Password:</label>
         <input id="password1" class = "form-control" type=password required name=password>
         <label for="password2">Confirm password:</label>
-        <input id="password2" class="form-control" type=password required name=password2>
+        <input id="password2" class="form-control" type=password required>
         <div class="invalid-feedback">
             Passwords must match
         </div>
