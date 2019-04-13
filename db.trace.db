@@ -1073,3 +1073,6 @@ update customer set addr_line1 = '60 Colony Manor Drive',   addr_line2 = 'apt 10
 2019-04-13 16:19:55 jdbc[3]: exception
 org.h2.jdbc.JdbcSQLException: Syntax error in SQL statement "SELECT CARD_NUM FROM CUSTOMERHASCREDITCARD WHERE CUSTOMER_ID = %[*]D; "; expected "ALL, ANY, SOME, SELECT, FROM, WITH"; SQL statement:
 select card_num from customerHasCreditCard where customer_id = %d; [42001-197]
+2019-04-13 17:02:14 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLException: Table "CUSTOMERHASPHONENUMBER" not found; SQL statement:
+insert into customerHasPhoneNumber values( 401, '603-721-9458' ); [42102-197]

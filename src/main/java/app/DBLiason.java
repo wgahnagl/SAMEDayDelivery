@@ -550,7 +550,7 @@ public class DBLiason {
         int id = getCustomerByEmail( email );
         if(id < 0) return false;
 
-        String cmdFmt = "insert into customerHasPhoneNumber values( %1, '%2' );";
+        String cmdFmt = "insert into customerHasPhone values( %1, '%2' );";
         String cmd = formatCommand( cmdFmt, Integer.toString(id), phone_num );
 
         statement.execute( cmd );
@@ -742,6 +742,23 @@ public class DBLiason {
         return result;
     }
 
+    public static ArrayList<String> getPhoneNumbersForCustomer( String email ) throws SQLException {
+        int id = getCustomerByEmail( email );
+        if(id < 0) return null;
+
+        String cmdFmt = "select phone_num from customerHasPhone where customer_id = %1;";
+        String cmd = formatCommand( cmdFmt, Integer.toString(id) );
+        ResultSet rs = statement.executeQuery( cmd );
+
+        ArrayList<String> result = new ArrayList<>();
+
+        while(rs.next()) {
+            result.add(rs.getString("phone_num"));
+        }
+
+        return result;
+    }
+
     public static HashMap<String, String> getAddressForCustomer( String email ) throws SQLException {
         int id = getCustomerByEmail( email );
         if(id < 0) return null;
@@ -820,20 +837,36 @@ public class DBLiason {
             linkBankAccount( des, "98" );
             linkBankAccount( evan, "97" );
 
+            linkPhoneNumber( evan, "603-721-9458");
+            linkPhoneNumber( des, "111-111-1111");
+            linkPhoneNumber( des, "222-222-2222");
+
             ArrayList<String> evanCards = getCreditCardsForCustomer( evan );
-            ArrayList<String> skyCards = getCreditCardsForCustomer( des );
+            ArrayList<String> desCards = getCreditCardsForCustomer( des );
+
+            ArrayList<String> evanPhone = getPhoneNumbersForCustomer( evan );
+            ArrayList<String> desPhone = getPhoneNumbersForCustomer( des );
 
             System.out.println();
             System.out.print("Evan's cards:");
             for(String s : evanCards) System.out.print(" " + s);
 
             System.out.print("\nDes's cards:");
-            for(String s : skyCards) System.out.print(" " + s);
+            for(String s : desCards) System.out.print(" " + s);
             System.out.println();
 
             System.out.println();
             System.out.println("Evan's bank account: " + getBankAccountForCustomer(evan));
             System.out.println("Des's bank account: " + getBankAccountForCustomer(des));
+
+            System.out.println();
+            System.out.print("Evan's phone numbers:");
+            for(String s : evanPhone) System.out.print(" " + s);
+            System.out.println();
+
+            System.out.print("Des's phone numbers:");
+            for(String s : desPhone) System.out.print(" " + s);
+            System.out.println();
 
         } catch (SQLException sqle) {
             sqle.printStackTrace();
