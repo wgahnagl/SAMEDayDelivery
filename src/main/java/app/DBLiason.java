@@ -456,7 +456,7 @@ public class DBLiason {
         if(!result.first()) return -1; // No such customer
         return result.getInt("ID");
     }
-    private static void addCustomerByInfo( String lastName, String firstName, String email, String password ) throws SQLException {
+    public static void addCustomerByInfo( String lastName, String firstName, String email, String password ) throws SQLException {
         // Add a customer with only an email, password, lastname, and firstname
 
         int maxID = currentMaxCustomerID();
@@ -467,7 +467,7 @@ public class DBLiason {
         statement.execute( insertCmd );
     }
 
-    private static void addCustomerByAddr( String addr_line1, String addr_line2,String city, String province, String zipcode, String country ) throws SQLException {
+    public static void addCustomerByAddr( String addr_line1, String addr_line2,String city, String province, String zipcode, String country ) throws SQLException {
         // Add a null customer with only an address (no email, password, lastname, or firstname)
 
         int maxID = currentMaxCustomerID();
@@ -478,7 +478,7 @@ public class DBLiason {
         statement.execute( cmd );
     }
 
-    private static boolean linkAddress( String email, String addr_line1, String addr_line2, String city, String province, String zipcode, String country ) throws SQLException {
+    public static boolean linkAddress( String email, String addr_line1, String addr_line2, String city, String province, String zipcode, String country ) throws SQLException {
         // Find the customer with the given email and fill in their address as the given address
         // If there exists a null customer with the given address, delete it
         // Todo: Also update all other tables to relink addrID to emailID
@@ -537,7 +537,7 @@ public class DBLiason {
         int id = getCustomerByEmail( email );
         if(id < 0) return false;
 
-        String cmdFmt = "insert into customerHasCreditCard values (%1, '%2');";
+        String cmdFmt = "insert into customerCreditCard values (%1, '%2');";
         String cmd = formatCommand( cmdFmt, Integer.toString(id), card_num );
 
         statement.execute( cmd );
@@ -717,7 +717,7 @@ public class DBLiason {
         int id = getCustomerByEmail( email );
         if(id < 0) return null;
 
-        String sql = String.format("select card_num from customerHasCreditCard where customer_id = %d;", id);
+        String sql = String.format("select card_num from customerCreditCard where customer_id = %d;", id);
         ResultSet rs = statement.executeQuery(sql);
 
         ArrayList<String> result = new ArrayList<>();

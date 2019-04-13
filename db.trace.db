@@ -1070,3 +1070,53 @@ org.h2.jdbc.JdbcSQLException: Syntax error in SQL statement "%[*]D "; SQL statem
 2019-04-13 13:58:24 jdbc[3]: exception
 org.h2.jdbc.JdbcSQLException: Syntax error in SQL statement "UPDATE CUSTOMER SET ADDR_LINE1 = '60 Colony Manor Drive',   ADDR_LINE2 = 'apt 109',   CITY = 'Rochester',         PROVINCE = 'New York',     ZIPCODE = '14623',      COUNTRY = 'USA'       WHERE ID = %[*]7 ;       "; expected "ALL, ANY, SOME, SELECT, FROM, WITH"; SQL statement:
 update customer set addr_line1 = '60 Colony Manor Drive',   addr_line2 = 'apt 109',   city = 'Rochester',         province = 'New York',     zipcode = '14623',      country = 'USA'       where ID = %7 ;       [42001-197]
+2019-04-13 16:31:56 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLException: Table "CUSTOMER" not found; SQL statement:
+select ID from customer where email = 'moo@moo.com' and password = 'moo'; [42102-197]
+2019-04-13 16:32:23 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLException: Table "CUSTOMER" not found; SQL statement:
+select ID from customer where email = 'moo@moo.com' and password = 'moo'; [42102-197]
+2019-04-13 16:32:26 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLException: Table "CUSTOMER" not found; SQL statement:
+select ID from customer where email = 'moo@moo.com' and password = 'moo'; [42102-197]
+2019-04-13 16:32:59 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLException: Table "CUSTOMER" not found; SQL statement:
+select ID from Customer where email = 'moo@moo.com' and password = 'moo'; [42102-197]
+2019-04-13 16:33:46 database: flush
+org.h2.message.DbException: General error: "java.lang.IllegalStateException: The file is locked: nio:C:/Users/Skyler/Documents/Schoolwork/SameDayDelivery/db.mv.db [1.4.197/7]" [50000-197]
+	at org.h2.message.DbException.get(DbException.java:168)
+	at org.h2.message.DbException.convert(DbException.java:307)
+	at org.h2.mvstore.db.MVTableEngine$1.uncaughtException(MVTableEngine.java:95)
+	at org.h2.mvstore.MVStore.handleException(MVStore.java:2506)
+	at org.h2.mvstore.MVStore.panic(MVStore.java:383)
+	at org.h2.mvstore.MVStore.<init>(MVStore.java:364)
+	at org.h2.mvstore.MVStore$Builder.open(MVStore.java:2934)
+	at org.h2.mvstore.db.MVTableEngine$Store.open(MVTableEngine.java:155)
+	at org.h2.mvstore.db.MVTableEngine.init(MVTableEngine.java:100)
+	at org.h2.engine.Database.getPageStore(Database.java:2538)
+	at org.h2.engine.Database.open(Database.java:709)
+	at org.h2.engine.Database.openDatabase(Database.java:286)
+	at org.h2.engine.Database.<init>(Database.java:280)
+	at org.h2.engine.Engine.openSession(Engine.java:66)
+	at org.h2.engine.Engine.openSession(Engine.java:179)
+	at org.h2.engine.Engine.createSessionAndValidate(Engine.java:157)
+	at org.h2.engine.Engine.createSession(Engine.java:140)
+	at org.h2.engine.Engine.createSession(Engine.java:28)
+	at org.h2.engine.SessionRemote.connectEmbeddedOrServer(SessionRemote.java:351)
+	at org.h2.jdbc.JdbcConnection.<init>(JdbcConnection.java:124)
+	at org.h2.jdbc.JdbcConnection.<init>(JdbcConnection.java:103)
+	at org.h2.Driver.connect(Driver.java:69)
+	at java.sql.DriverManager.getConnection(DriverManager.java:664)
+	at java.sql.DriverManager.getConnection(DriverManager.java:247)
+	at app.DBLiason.<clinit>(DBLiason.java:45)
+Caused by: org.h2.jdbc.JdbcSQLException: General error: "java.lang.IllegalStateException: The file is locked: nio:C:/Users/Skyler/Documents/Schoolwork/SameDayDelivery/db.mv.db [1.4.197/7]" [50000-197]
+	at org.h2.message.DbException.getJdbcSQLException(DbException.java:357)
+	... 25 more
+Caused by: java.lang.IllegalStateException: The file is locked: nio:C:/Users/Skyler/Documents/Schoolwork/SameDayDelivery/db.mv.db [1.4.197/7]
+	at org.h2.mvstore.DataUtils.newIllegalStateException(DataUtils.java:870)
+	at org.h2.mvstore.FileStore.open(FileStore.java:173)
+	at org.h2.mvstore.MVStore.<init>(MVStore.java:350)
+	... 19 more
+2019-04-13 16:33:58 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLException: Table "CUSTOMERHASCREDITCARD" not found; SQL statement:
+insert into customerHasCreditCard values (5, '4'); [42102-197]

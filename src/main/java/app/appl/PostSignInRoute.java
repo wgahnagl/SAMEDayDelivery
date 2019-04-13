@@ -1,5 +1,6 @@
 package app.appl;
 
+import app.DBLiason;
 import app.model.User;
 import spark.Request;
 import spark.Response;
@@ -10,11 +11,12 @@ public class PostSignInRoute implements Route {
     public Object handle(Request request, Response response) throws Exception {
         String email = request.queryParams("email");
         String password = request.queryParams("password");
-        //if the username matches the password stored in the DB
-        if(true){
+
+        if(DBLiason.checkPassword(email, password)){
             request.session().attribute("currentUser", new User(email));
+        }else{
+            response.header("error", "user not found");
         }
-        response.redirect("/");
         return null;
     }
 }
