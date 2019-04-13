@@ -4,9 +4,9 @@
 <body>
 <div class="container-fluid">
     <div class="container">
-        <form role="form" method="POST" action="/signup">
+        <form role="form" id="accountCreateForm" method="POST" action="/signup">
             <fieldset>
-                <#include "customerData.ftl">
+                <#include "components/createAccount.ftl">
             </fieldset>
         </form>
     </div>
