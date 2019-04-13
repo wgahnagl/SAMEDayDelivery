@@ -1,4 +1,4 @@
-package app.appl;
+package app.appl.customer;
 
 import app.DBLiason;
 import app.model.User;

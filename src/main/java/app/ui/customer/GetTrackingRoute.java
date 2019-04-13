@@ -1,4 +1,4 @@
-package app.ui;
+package app.ui.customer;
 
 import app.util.Util;
 import spark.*;
@@ -23,7 +23,8 @@ public class GetTrackingRoute implements Route {
         }
         else if(request.host().startsWith("delivery")){
             response.redirect("/");
-            return null;        }
+            return null;
+        }
         else{
             return templateEngine.render(new ModelAndView(vm, "customer/tracking.ftl"));
         }

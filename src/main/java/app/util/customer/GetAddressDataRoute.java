@@ -1,4 +1,4 @@
-package app.util;
+package app.util.customer;
 
 import spark.Request;
 import spark.Response;

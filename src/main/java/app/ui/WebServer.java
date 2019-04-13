@@ -4,9 +4,14 @@ import static spark.Spark.*;
 import java.util.Objects;
 
 import app.appl.*;
-import app.util.GetAddressDataRoute;
-import app.util.GetBankAccountDataRoute;
-import app.util.GetCreditCardDataRoute;
+import app.appl.customer.PostAddAddressRoute;
+import app.appl.customer.PostAddBankAccountRoute;
+import app.appl.customer.PostAddCreditCardRoute;
+import app.appl.customer.PostSignUpRoute;
+import app.ui.customer.*;
+import app.util.customer.GetAddressDataRoute;
+import app.util.customer.GetBankAccountDataRoute;
+import app.util.customer.GetCreditCardDataRoute;
 import spark.TemplateEngine;
 
 public class WebServer {

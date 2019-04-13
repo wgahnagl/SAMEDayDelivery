@@ -16,19 +16,29 @@
     </button>
 
     <div class="collapse navbar-collapse" id="navbarSupportedContent">
-        <#if view=="admin">
-            <#include "../admin/components/navbarContents.ftl">
-        <#elseif view == "delivery">
-            <#include "../delivery/components/navbarContents.ftl">
-        <#else>
-            <#include "../customer/components/navbarContents.ftl">
-        </#if>
+        <ul class="navbar-nav mr-auto">
+            <li class="nav-item active">
+                <a class="nav-link" href="/">Home <span class="sr-only">(current)</span></a>
+            </li>
 
         <#if currentUser??>
-            <form class="form-inline my-2 my-lg-0" action="/signout" method="POST">
+            <#if view=="admin">
+                <#include "../admin/components/navbarContents.ftl">
+            <#elseif view == "delivery">
+                <#include "../delivery/components/navbarContents.ftl">
+            <#else>
+                <#include "../customer/components/navbarContents.ftl">
+            </#if>
+            <li class="nav-item">
+                <a class="nav-link" href="/account">Account</a>
+            </li>
+        </ul>
+
+        <form class="form-inline my-2 my-lg-0" action="/signout" method="POST">
                 <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Sign Out</button>
             </form>
         <#else>
+        </ul>
             <a href="/signin">
                 <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Sign In</button>
             </a>
