@@ -62,8 +62,8 @@ public class WebServer {
         get(GET_CREDIT_CARD_DATA_URL, new GetCreditCardDataRoute());
         get(GET_TRACKING_DATA_URL, new GetTrackingDataRoute());
 
+        post(SIGNIN_URL, new PostSignInRoute(templateEngine));
         post(SIGNUP_URL, new PostSignUpRoute());
-        post(SIGNIN_URL, new PostSignInRoute());
         post(SIGNOUT_URL, new PostSignOutRoute());
         post(CREATE_LABEL_URL, new PostCreateLabel());
         post(COMMISSION_PACKAGE_URL, new PostCommissionPackage());

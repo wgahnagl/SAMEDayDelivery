@@ -16,7 +16,10 @@ public class GetSignInRoute implements Route {
     public Object handle(Request request, Response response) {
         Map<String, Object> vm = Util.getCurrentUser(request);
         vm.put("view" , request.host().split("\\.")[0]);
-
+        String error = request.session().attribute("signInError");
+        if(error != null){
+            vm.put("error", error);
+        }
         return templateEngine.render(new ModelAndView(vm, "login.ftl"));
     }
 }
