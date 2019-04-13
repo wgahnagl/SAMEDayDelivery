@@ -4,10 +4,7 @@ import static spark.Spark.*;
 import java.util.Objects;
 
 import app.appl.*;
-import app.appl.customer.PostAddAddressRoute;
-import app.appl.customer.PostAddBankAccountRoute;
-import app.appl.customer.PostAddCreditCardRoute;
-import app.appl.customer.PostSignUpRoute;
+import app.appl.customer.*;
 import app.ui.customer.*;
 import app.util.customer.GetAddressDataRoute;
 import app.util.customer.GetBankAccountDataRoute;
@@ -68,12 +65,11 @@ public class WebServer {
         post(SIGNUP_URL, new PostSignUpRoute());
         post(SIGNIN_URL, new PostSignInRoute());
         post(SIGNOUT_URL, new PostSignOutRoute());
+        post(CREATE_LABEL_URL, new PostCreateLabel());
+        post(COMMISSION_PACKAGE_URL, new PostCommissionPackage());
         post(ADD_CREDIT_CARD_URL, new PostAddCreditCardRoute());
         post(ADD_ADDRESS_URL, new PostAddAddressRoute());
         post(ADD_BANK_ACCOUNT_URL, new PostAddBankAccountRoute());
-
-
-
     }
 
 }
