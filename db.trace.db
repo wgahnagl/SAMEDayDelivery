@@ -1070,3 +1070,6 @@ org.h2.jdbc.JdbcSQLException: Syntax error in SQL statement "%[*]D "; SQL statem
 2019-04-13 13:58:24 jdbc[3]: exception
 org.h2.jdbc.JdbcSQLException: Syntax error in SQL statement "UPDATE CUSTOMER SET ADDR_LINE1 = '60 Colony Manor Drive',   ADDR_LINE2 = 'apt 109',   CITY = 'Rochester',         PROVINCE = 'New York',     ZIPCODE = '14623',      COUNTRY = 'USA'       WHERE ID = %[*]7 ;       "; expected "ALL, ANY, SOME, SELECT, FROM, WITH"; SQL statement:
 update customer set addr_line1 = '60 Colony Manor Drive',   addr_line2 = 'apt 109',   city = 'Rochester',         province = 'New York',     zipcode = '14623',      country = 'USA'       where ID = %7 ;       [42001-197]
+2019-04-13 16:19:55 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLException: Syntax error in SQL statement "SELECT CARD_NUM FROM CUSTOMERHASCREDITCARD WHERE CUSTOMER_ID = %[*]D; "; expected "ALL, ANY, SOME, SELECT, FROM, WITH"; SQL statement:
+select card_num from customerHasCreditCard where customer_id = %d; [42001-197]

@@ -543,6 +543,20 @@ public class DBLiason {
         return true;
     }
 
+    private static boolean linkPhoneNumber( String email, String phone_num ) throws SQLException {
+        // Link a given customer account to a bank account number (this DOES NOT delete any previously-linked phone numbers)
+        // Returns true on success, false on failure
+
+        int id = getCustomerByEmail( email );
+        if(id < 0) return false;
+
+        String cmdFmt = "insert into customerHasPhoneNumber values( %1, '%2' );";
+        String cmd = formatCommand( cmdFmt, Integer.toString(id), phone_num );
+
+        statement.execute( cmd );
+        return true;
+    }
+
 
     /* Manipulations of the package table
      * LOW-LEVEL FUNCTIONS ONLY: LINK UI TO THESE FUNCTIONS WITH CAUTION, IF AT ALL
@@ -568,7 +582,7 @@ public class DBLiason {
     }
 
     private static boolean scanPackage(int origin_customer_id, int dest_customer_id, Expediency expediency,
-                                   PackageType type, int weight_in_grams, int price_in_cents,
+                                   PackageType type, int weight_in_grams,
                                    boolean receiver_pays, boolean already_paid ) throws SQLException {
 
         // UNDER CONSTRUCTION
@@ -699,22 +713,6 @@ public class DBLiason {
         return false;
     }
 
-    public static ArrayList<String> getCreditCardsForCustomer( String email ) throws SQLException {
-        int id = getCustomerByEmail( email );
-        if(id < 0) return null;
-
-        String sql = String.format("select card_num from customerHasCreditCard where customer_id = %d;", id);
-        ResultSet rs = statement.executeQuery(sql);
-
-        ArrayList<String> result = new ArrayList<>();
-
-        while (rs.next()) {
-            result.add(rs.getString("card_num"));
-        }
-
-        return result;
-    }
-
     public static String getBankAccountForCustomer( String email ) throws SQLException {
         int id = getCustomerByEmail( email );
         if(id < 0) return null;
@@ -725,6 +723,23 @@ public class DBLiason {
         ResultSet rs = statement.executeQuery( cmd );
         rs.first();
         return rs.getString("bank_account");
+    }
+
+    public static ArrayList<String> getCreditCardsForCustomer( String email ) throws SQLException {
+        int id = getCustomerByEmail( email );
+        if(id < 0) return null;
+
+        String cmdFmt = "select card_num from customerHasCreditCard where customer_id = %1;";
+        String cmd = formatCommand( cmdFmt, Integer.toString(id) );
+        ResultSet rs = statement.executeQuery( cmd );
+
+        ArrayList<String> result = new ArrayList<>();
+
+        while (rs.next()) {
+            result.add(rs.getString("card_num"));
+        }
+
+        return result;
     }
 
     public static HashMap<String, String> getAddressForCustomer( String email ) throws SQLException {
