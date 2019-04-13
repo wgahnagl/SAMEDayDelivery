@@ -235,18 +235,16 @@ public class DBLiason {
         return value.replaceAll("'", "''");
     }
 
-    private static String formatCommand(String formatString, String valueList) {
-        // Apply a format string like ("%3, %2, %1, '%4', %5")
-        // to a list of values like "pie, 32, 42, David Smith, hello"
+    private static String formatCommand(String formatString, String ... values) {
+        // Apply a format string like "select %2 from customer where first_name = '%1' and id < %3"
+        // to a list of values like "ID", "Evan", "400"
 
-        // TODO: Rename this method to "formatCommand" since there's no reason it can't
-        // be that general. Then change all the usages to match.  (It is already used the new
-        // way in getCustomerByAddress). Also, switch the arguments to be consistent
-        // with the String.format() frame.
+        // The only difference between this command and String.format is that this command filters
+        // all of its arguments through the escapeSingleQuotes method (and, in the future, any other
+        // methods necessary to sanitize an input for entry into the database)
 
         // Todo: Might want to use varargs, though then I'd need to manually cast args to strings before entering
 
-        String[] values = valueList.split(",");
         String result = formatString;
 
         for(int i = 0; i < values.length; i++) {
@@ -273,7 +271,7 @@ public class DBLiason {
                     continue;
 
                 if(!reformat.equals(""))  // If specified, apply the format string
-                    line = formatCommand(reformat, line);
+                    line = formatCommand(reformat, line.split(","));
 
                 statement.execute( String.format( "insert into %s values (%s);", tablename, line) ); // SQLException
             }
@@ -382,15 +380,10 @@ public class DBLiason {
     private static void addCustomerByInfo( String lastName, String firstName, String email, String password ) throws SQLException {
         // Add a customer with only an email, password, lastname, and firstname
 
-        String valuesFmt = "%d,%s,%s,%s,%s"; // Put parameters into a String
-        String rowFmt = "%1, '%4', '%5', '%2', '%3', null, null, null, null, null, null, null";
-        String insertCmdFmt = "insert into customer values (%s);";
-
         int maxID = currentMaxCustomerID();
-        
-        String values = String.format( valuesFmt, maxID + 1, lastName, firstName, email, password );
-        String row = formatCommand( rowFmt, values );
-        String insertCmd = String.format( insertCmdFmt, row );
+
+        String cmdFmt = "insert into customer values(%1, '%2', '%3', '%4', '%5', null, null, null, null, null, null, null);";
+        String insertCmd = formatCommand( cmdFmt, Integer.toString(maxID+1), email, password, lastName, firstName);
 
         statement.execute( insertCmd );
     }
@@ -398,32 +391,23 @@ public class DBLiason {
     private static void addCustomerByAddr( String addr_line1, String addr_line2,String city, String province, String zipcode, String country ) throws SQLException {
         // Add a null customer with only an address (no email, password, lastname, or firstname)
 
-        String valuesFmt = "%d,%s,%s,%s,%s,%s,%s";
-        String rowFmt = "%1, null, null, null, null, null, '%2', '%3', '%4', '%5', '%6', '%7'";
-        String insertCmdFmt = "insert into customer values (%s);";
-
         int maxID = currentMaxCustomerID();
 
-        String values = String.format( valuesFmt, maxID + 1, addr_line1, addr_line2,
-                                       city, province, zipcode, country );
-        String row = formatCommand( rowFmt, values );
-        String insertCmd = String.format( insertCmdFmt, row );
+        String cmdFmt = "insert into customer values (%1, null, null, null, null, null, '%2', '%3', '%4', '%5', '%6', '%7');";
+        String cmd = formatCommand( cmdFmt, Integer.toString(maxID+1), addr_line1, addr_line2, city, province, zipcode, country );
 
-        statement.execute( insertCmd );
+        statement.execute( cmd );
     }
 
     private static int getCustomerByEmail( String email ) throws SQLException {
         // Return the ID of a customer with a given email address, or -1 if no such customer is found
         // (There should never be more than one customer with the same email address)
 
-        String valuesFmt = "%s";
         String cmdFmt = "select ID from customer where email = '%1';";
-
-        String values = String.format( valuesFmt, email );
-        String cmd = formatCommand( cmdFmt, values );
+        String cmd = formatCommand( cmdFmt, email );
 
         ResultSet result = statement.executeQuery( cmd );
-        if (!result.first()) return -1; // I this will never happen
+        if (!result.first()) return -1; // This should never happen
         return result.getInt("ID");
     }   
     
@@ -431,7 +415,6 @@ public class DBLiason {
         // Return the ID of the customer with a given address, or -1 if no such customer is found
         // (There should never (?) be more than one customer with the same address)
 
-        String valuesFmt = "%s,%s,%s,%s,%s,%s";
         String cmdFmt = "select ID from customer where " +
             "addr_line1 = '%1' and " +
             "addr_line2 = '%2' and " +
@@ -441,9 +424,8 @@ public class DBLiason {
             "country = '%6' " +
             ";";
         
-        String values = String.format( valuesFmt, addr_line1, addr_line2, city, province,
-                                       zipcode, country );
-        String cmd = formatCommand( cmdFmt, values );
+;
+        String cmd = formatCommand( cmdFmt, addr_line1, addr_line2, city, province, zipcode, country );
 
         ResultSet result = statement.executeQuery( cmd );
         if(!result.first()) return -1; // No such customer
@@ -474,7 +456,6 @@ public class DBLiason {
 
         // Set the address for the acting customer (this happens regardless of whether a null customer was found for the address)
 
-        String valuesFmt = "%s,%s,%s,%s,%s,%s,%d";
         String cmdFmt = "update customer set " +
             "addr_line1 = '%1',   " +
             "addr_line2 = '%2',   " +
@@ -484,8 +465,7 @@ public class DBLiason {
             "country = '%6'       " +
             "where ID = %7 ;      " ;
 
-        String values = String.format( valuesFmt, addr_line1, addr_line2, city, province, zipcode, country, emailID );
-        String cmd = formatCommand( cmdFmt, values );
+        String cmd = formatCommand( cmdFmt, addr_line1, addr_line2, city, province, zipcode, country, Integer.toString(emailID) );
 
         statement.execute( cmd );
 
@@ -495,11 +475,9 @@ public class DBLiason {
         if( addrID < 0 )
             return true; // No need to raise error just because no address was deleted
 
-        valuesFmt = "%d";
         cmdFmt = "delete from customer where ID = %1;";
+        cmd = formatCommand( cmdFmt, Integer.toString(addrID) );
 
-        values = String.format( valuesFmt, addrID );
-        cmd = formatCommand( cmdFmt, values );
 
         statement.execute( cmd );
         
@@ -513,11 +491,8 @@ public class DBLiason {
         int id = getCustomerByEmail( email );
         if(id < 0) return false;
 
-        String rowFmt = "%d,%s";
         String cmdFmt = "insert into customerHasCreditCard values (%1, '%2');";
-
-        String row = String.format( rowFmt, id, card_num );
-        String cmd = formatCommand( cmdFmt, row );
+        String cmd = formatCommand( cmdFmt, Integer.toString(id), card_num );
 
         statement.execute( cmd );
         return true;
@@ -530,11 +505,8 @@ public class DBLiason {
         int id = getCustomerByEmail( email );
         if(id < 0) return false;
 
-        String rowFmt = "%d,%s";
         String cmdFmt = "update customer set bank_account = '%2' where id = %1";
-
-        String row = String.format( rowFmt, id, acct_num );
-        String cmd = formatCommand( cmdFmt, row );
+        String cmd = formatCommand( cmdFmt, Integer.toString(id), acct_num );
 
         statement.execute( cmd );
         return true;
@@ -637,11 +609,8 @@ public class DBLiason {
         int id = getCustomerByEmail( email );
         if(id < 0) return null;
 
-        String rowFmt = "%d";
         String cmdFmt = "select bank_account from customer where id = %1;";
-
-        String row = String.format( rowFmt, id );
-        String cmd = formatCommand( cmdFmt, row );
+        String cmd = formatCommand( cmdFmt, Integer.toString(id) );
 
         ResultSet rs = statement.executeQuery( cmd );
         rs.first();
@@ -652,11 +621,8 @@ public class DBLiason {
         // Return true if the customer with the given email has the given password
         // ( Returns false if the password is incorrect or if no such customer exists )
 
-        String rowFmt = "%s,%s";
         String cmdFmt = "select ID from customer where email = '%1' and password = '%2';";
-
-        String row = String.format( rowFmt, email, password );
-        String cmd = formatCommand( cmdFmt, row );
+        String cmd = formatCommand( cmdFmt, email, password );
 
         ResultSet rs = statement.executeQuery( cmd );
 
