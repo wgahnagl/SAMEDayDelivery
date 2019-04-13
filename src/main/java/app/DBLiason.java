@@ -8,6 +8,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.sql.*;
 import java.util.ArrayList;
+import java.util.HashMap;
 
 /**
  * Created by evan on 3/20/19.
@@ -683,6 +684,21 @@ public class DBLiason {
         statement.execute(sql);
     }
 
+    public static boolean checkPassword( String email, String password ) throws SQLException {
+        // Return true if the customer with the given email has the given password
+        // ( Returns false if the password is incorrect or if no such customer exists )
+
+        String cmdFmt = "select ID from customer where email = '%1' and password = '%2';";
+        String cmd = formatCommand( cmdFmt, email, password );
+
+        ResultSet rs = statement.executeQuery( cmd );
+
+        if( rs.first() ) // If there exists a customer with this email and password, the password is correct
+            return true;
+
+        return false;
+    }
+
     public static ArrayList<String> getCreditCardsForCustomer( String email ) throws SQLException {
         int id = getCustomerByEmail( email );
         if(id < 0) return null;
@@ -711,20 +727,24 @@ public class DBLiason {
         return rs.getString("bank_account");
     }
 
-    public static boolean checkPassword( String email, String password ) throws SQLException {
-        // Return true if the customer with the given email has the given password
-        // ( Returns false if the password is incorrect or if no such customer exists )
+    public static HashMap<String, String> getAddressForCustomer( String email ) throws SQLException {
+        int id = getCustomerByEmail( email );
+        if(id < 0) return null;
 
-        String cmdFmt = "select ID from customer where email = '%1' and password = '%2';";
-        String cmd = formatCommand( cmdFmt, email, password );
+        String cmdFmt = "select addr_line1, addr_line2, city, province, zipcode, country from customer where id = %1;";
+        String cmd = formatCommand( cmdFmt, Integer.toString(id) );
 
         ResultSet rs = statement.executeQuery( cmd );
+        rs.first();
 
-        if( rs.first() ) // If there exists a customer with this email and password, the password is correct
-            return true;
+        HashMap<String, String> address = new HashMap<String, String>();
+        for(String key : new String[] {"addr_line1", "addr_line2", "city", "province", "zipcode", "country"}) {
+            address.put( key, rs.getString(key) );
+        }
 
-        return false;
+        return address;
     }
+
 
 
     /* Specific query utilities */
@@ -801,6 +821,19 @@ public class DBLiason {
             System.out.println("Des's bank account: " + getBankAccountForCustomer(des));
 
         } catch (SQLException sqle) {
+            sqle.printStackTrace();
+        }
+
+        try {
+            System.out.println();
+            HashMap<String, String> evanAddress = getAddressForCustomer( email );
+
+            System.out.println("EVAN'S ADDRESS");
+            for( String key : evanAddress.keySet() ) {
+                System.out.println( String.format("%s: %s", key, evanAddress.get(key)) );
+            }
+
+        } catch( SQLException sqle ) {
             sqle.printStackTrace();
         }
     }
