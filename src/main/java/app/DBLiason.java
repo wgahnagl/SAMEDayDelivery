@@ -235,7 +235,7 @@ public class DBLiason {
         return value.replaceAll("'", "''");
     }
 
-    private static String formatInputRow(String valueList, String formatString) {
+    private static String formatCommand(String formatString, String valueList) {
         // Apply a format string like ("%3, %2, %1, '%4', %5")
         // to a list of values like "pie, 32, 42, David Smith, hello"
 
@@ -273,7 +273,7 @@ public class DBLiason {
                     continue;
 
                 if(!reformat.equals(""))  // If specified, apply the format string
-                    line = formatInputRow(line, reformat);
+                    line = formatCommand(reformat, line);
 
                 statement.execute( String.format( "insert into %s values (%s);", tablename, line) ); // SQLException
             }
@@ -389,7 +389,7 @@ public class DBLiason {
         int maxID = currentMaxCustomerID();
         
         String values = String.format( valuesFmt, maxID + 1, lastName, firstName, email, password );
-        String row = formatInputRow( values, rowFmt );
+        String row = formatCommand( rowFmt, values );
         String insertCmd = String.format( insertCmdFmt, row );
 
         statement.execute( insertCmd );
@@ -406,7 +406,7 @@ public class DBLiason {
 
         String values = String.format( valuesFmt, maxID + 1, addr_line1, addr_line2,
                                        city, province, zipcode, country );
-        String row = formatInputRow( values, rowFmt );
+        String row = formatCommand( rowFmt, values );
         String insertCmd = String.format( insertCmdFmt, row );
 
         statement.execute( insertCmd );
@@ -420,7 +420,7 @@ public class DBLiason {
         String cmdFmt = "select ID from customer where email = '%1';";
 
         String values = String.format( valuesFmt, email );
-        String cmd = formatInputRow( values, cmdFmt );
+        String cmd = formatCommand( cmdFmt, values );
 
         ResultSet result = statement.executeQuery( cmd );
         if (!result.first()) return -1; // I this will never happen
@@ -443,7 +443,7 @@ public class DBLiason {
         
         String values = String.format( valuesFmt, addr_line1, addr_line2, city, province,
                                        zipcode, country );
-        String cmd = formatInputRow( values, cmdFmt );
+        String cmd = formatCommand( cmdFmt, values );
 
         ResultSet result = statement.executeQuery( cmd );
         if(!result.first()) return -1; // No such customer
@@ -485,7 +485,7 @@ public class DBLiason {
             "where ID = %7 ;      " ;
 
         String values = String.format( valuesFmt, addr_line1, addr_line2, city, province, zipcode, country, emailID );
-        String cmd = formatInputRow( values, cmdFmt );
+        String cmd = formatCommand( cmdFmt, values );
 
         statement.execute( cmd );
 
@@ -499,7 +499,7 @@ public class DBLiason {
         cmdFmt = "delete from customer where ID = %1;";
 
         values = String.format( valuesFmt, addrID );
-        cmd = formatInputRow( values, cmdFmt );
+        cmd = formatCommand( cmdFmt, values );
 
         statement.execute( cmd );
         
@@ -517,7 +517,7 @@ public class DBLiason {
         String cmdFmt = "insert into customerHasCreditCard values (%1, '%2');";
 
         String row = String.format( rowFmt, id, card_num );
-        String cmd = formatInputRow( row, cmdFmt );
+        String cmd = formatCommand( cmdFmt, row );
 
         statement.execute( cmd );
         return true;
@@ -534,7 +534,7 @@ public class DBLiason {
         String cmdFmt = "update customer set bank_account = '%2' where id = %1";
 
         String row = String.format( rowFmt, id, acct_num );
-        String cmd = formatInputRow( row, cmdFmt );
+        String cmd = formatCommand( cmdFmt, row );
 
         statement.execute( cmd );
         return true;
@@ -641,7 +641,7 @@ public class DBLiason {
         String cmdFmt = "select bank_account from customer where id = %1;";
 
         String row = String.format( rowFmt, id );
-        String cmd = formatInputRow( row, cmdFmt );
+        String cmd = formatCommand( cmdFmt, row );
 
         ResultSet rs = statement.executeQuery( cmd );
         rs.first();
@@ -656,7 +656,7 @@ public class DBLiason {
         String cmdFmt = "select ID from customer where email = '%1' and password = '%2';";
 
         String row = String.format( rowFmt, email, password );
-        String cmd = formatInputRow( row, cmdFmt );
+        String cmd = formatCommand( cmdFmt, row );
 
         ResultSet rs = statement.executeQuery( cmd );
 
