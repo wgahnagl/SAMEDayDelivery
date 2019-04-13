@@ -48,10 +48,41 @@ public class DBLiason {
         statement = statementTemp;
     }
 
+
+    public enum Expediency {
+        OVERNIGHT (1.75),
+        TWODAY    (1.25),
+        REGULAR   (1.00);
+
+        double priceMultiplier;
+        Expediency( double _priceMultiplier ) {
+            this.priceMultiplier = _priceMultiplier;
+        }
+    }
+
+    public enum PackageType {
+        // In the future, the package types could be expanded to e.g. "10in x 10in" or "length + width < 100in"
+        // Note that envelopes are not letters but package-sized envelopes
+        ENVELOPE_SMALL ( 500,  5000),
+        ENVELOPE_LARGE ( 800, 10000),
+        PACKAGE_SMALL  (1500, 20000),
+        PACAKGE_MEDIUM (2000, 40000),
+        PACKAGE_LARGE  (3000,120000);
+
+        int basePriceCents;
+        int maxWeightGrams;
+        PackageType( int _basePriceCents, int _maxWeightGrams ) {
+            this.basePriceCents = _basePriceCents;
+            this.maxWeightGrams = _maxWeightGrams;
+        }
+    }
+
+
     /* DB SETUP METHODS
      * These methods should not really ever be called during normal program execution.
      * They exist to be called by backend programmers when the format of the DB is
-     * updated significantly enough that a full refresh is called for. */
+     * updated significantly enough that a full refresh is called for.
+     */
 
     public static void setupDB() {
         System.out.println("Setting up the DB ");
@@ -90,7 +121,6 @@ public class DBLiason {
                 "delivery_timestamp   timestamp," +
                 "expected_delivery    timestamp," +
 
-                "size                 varchar(16)," +
                 "type                 varchar(16)," +
                 "weight               numeric(7,3)," + // Weight in kilograms, up to 9999 kg and accurate to the gram
 
@@ -376,7 +406,40 @@ public class DBLiason {
         maxIdResult.first();
         return maxIdResult.getInt("MAX(ID)");
     }
-        
+
+    private static int getCustomerByEmail( String email ) throws SQLException {
+        // Return the ID of a customer with a given email address, or -1 if no such customer is found
+        // (There should never be more than one customer with the same email address)
+
+        String cmdFmt = "select ID from customer where email = '%1';";
+        String cmd = formatCommand( cmdFmt, email );
+
+        ResultSet result = statement.executeQuery( cmd );
+        if (!result.first()) return -1; // This should never happen
+        return result.getInt("ID");
+    }
+
+    private static int getCustomerByAddr( String addr_line1, String addr_line2, String city, String province, String zipcode, String country ) throws SQLException {
+        // Return the ID of the customer with a given address, or -1 if no such customer is found
+        // (There should never (?) be more than one customer with the same address)
+
+        String cmdFmt = "select ID from customer where " +
+                "addr_line1 = '%1' and " +
+                "addr_line2 = '%2' and " +
+                "city = '%3' and " +
+                "province = '%4' and " +
+                "zipcode = '%5' and " +
+                "country = '%6' " +
+                ";";
+
+        ;
+        String cmd = formatCommand( cmdFmt, addr_line1, addr_line2, city, province, zipcode, country );
+
+        ResultSet result = statement.executeQuery( cmd );
+        if(!result.first()) return -1; // No such customer
+        return result.getInt("ID");
+    }
+
     private static void addCustomerByInfo( String lastName, String firstName, String email, String password ) throws SQLException {
         // Add a customer with only an email, password, lastname, and firstname
 
@@ -397,39 +460,6 @@ public class DBLiason {
         String cmd = formatCommand( cmdFmt, Integer.toString(maxID+1), addr_line1, addr_line2, city, province, zipcode, country );
 
         statement.execute( cmd );
-    }
-
-    private static int getCustomerByEmail( String email ) throws SQLException {
-        // Return the ID of a customer with a given email address, or -1 if no such customer is found
-        // (There should never be more than one customer with the same email address)
-
-        String cmdFmt = "select ID from customer where email = '%1';";
-        String cmd = formatCommand( cmdFmt, email );
-
-        ResultSet result = statement.executeQuery( cmd );
-        if (!result.first()) return -1; // This should never happen
-        return result.getInt("ID");
-    }   
-    
-    private static int getCustomerByAddr( String addr_line1, String addr_line2, String city, String province, String zipcode, String country ) throws SQLException {
-        // Return the ID of the customer with a given address, or -1 if no such customer is found
-        // (There should never (?) be more than one customer with the same address)
-
-        String cmdFmt = "select ID from customer where " +
-            "addr_line1 = '%1' and " +
-            "addr_line2 = '%2' and " +
-            "city = '%3' and " +
-            "province = '%4' and " +
-            "zipcode = '%5' and " +
-            "country = '%6' " +
-            ";";
-        
-;
-        String cmd = formatCommand( cmdFmt, addr_line1, addr_line2, city, province, zipcode, country );
-
-        ResultSet result = statement.executeQuery( cmd );
-        if(!result.first()) return -1; // No such customer
-        return result.getInt("ID");
     }
 
     private static boolean linkAddress( String email, String addr_line1, String addr_line2, String city, String province, String zipcode, String country ) throws SQLException {
@@ -510,6 +540,70 @@ public class DBLiason {
 
         statement.execute( cmd );
         return true;
+    }
+
+
+    /* Manipulations of the package table
+     * LOW-LEVEL FUNCTIONS ONLY: LINK UI TO THESE FUNCTIONS WITH CAUTION, IF AT ALL
+     */
+
+    private static int currentMaxPackageID() throws SQLException {
+        ResultSet maxIdResult = statement.executeQuery( "select max(ID) from package;");
+        maxIdResult.first();
+        return maxIdResult.getInt("MAX(ID)");
+    }
+
+    private static int computeDaysBetween( int origin_customer_id, int dest_customer_id ) {
+        // Todo: implement this method for real
+        return 3;
+    }
+
+    private static int computePrice( PackageType type, int weight_in_grams, Expediency expediency ) {
+        double priceCents = type.basePriceCents; // For example, 500.00 would be **5** dollars (not 500 dollars)
+        priceCents *= expediency.priceMultiplier;
+        if( weight_in_grams > type.maxWeightGrams ) priceCents *= 1.5;
+        
+        return (int) priceCents; // Round down to nearest cent
+    }
+
+    private static boolean scanPackage(int origin_customer_id, int dest_customer_id, Expediency expediency,
+                                   PackageType type, int weight_in_grams, int price_in_cents,
+                                   boolean receiver_pays, boolean already_paid ) throws SQLException {
+
+        // UNDER CONSTRUCTION
+
+        /* There are a lot of fields in the package table. Here's how each of them is filled in:
+         *
+         *      ID:                     next available id
+         *
+         *      origin_customer_id:     given on package label
+         *      dest_customer_id:       given on package label
+         *
+         *      ship_timestamp:         current time (when this method is called)
+         *      delivery_timestamp:     null (gets set when package is delivered)
+         *      expected_delivery:      derived from ship_timestamp and expediency*
+         *
+         *      type:                   given on package label (can be verified manually if needed)
+         *      weight:                 given on package label (can be verified manually if needed)
+         *
+         *      price:                  computed from type, weight, and expediency*
+         *      receiver_pays:          given on package label
+         *      paid_flag:              given on package label**
+         *      signature:              null (gets set when the package is signed for)
+         *
+         *
+         *      * "expediency" is given on the package label, but is not present in the package table
+         *      ** The paid_flag will be true if the customer pays with a credit card and false if they bill monthly to an account
+         */
+
+        int id = currentMaxPackageID() + 1;
+
+        int days = expediency == Expediency.OVERNIGHT ? 1 :
+                   expediency == Expediency.TWODAY ? 2 :
+                   computeDaysBetween( origin_customer_id, dest_customer_id );
+
+        //int price = computePrice( type, weight_in_grams, expediency );
+        return false; // Temporary
     }
 
 
