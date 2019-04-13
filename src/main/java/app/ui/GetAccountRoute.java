@@ -16,6 +16,9 @@ public class GetAccountRoute implements Route {
     public Object handle(Request request, Response response) {
         Map<String, Object> vm = Util.getCurrentUser(request);
         vm.put("view" , request.host().split("\\.")[0]);
+        vm.put("address", request.session().attribute("address"));
+        vm.put("creditCard", request.session().attribute("creditCard"));
+        vm.put("bankAccount", request.session().attribute("bankAccount"));
 
         if(request.host().startsWith("admin")){
             return templateEngine.render(new ModelAndView(vm, "admin/accountView.ftl"));

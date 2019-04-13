@@ -640,6 +640,8 @@ public class DBLiason {
         }
     }
 
+
+
     public static String prettyCustomerList() {
         // Return a String of a newline-separated list of all the customers in the DB
 
@@ -759,6 +761,20 @@ public class DBLiason {
         return address;
     }
 
+    public static HashMap <String ,String> getCustomerName(String email) throws SQLException {
+        String cmdFmt = "select first_name, last_name from customer where email = '%1'";
+        String cmd = formatCommand( cmdFmt, email );
+
+        ResultSet rs = statement.executeQuery( cmd );
+        rs.first();
+
+        HashMap<String, String> name = new HashMap<String, String>();
+        for(String key : new String[] {"first_name", "last_name"}) {
+            name.put( key, rs.getString(key) );
+        }
+
+        return name;
+    }
 
 
     /* Specific query utilities */

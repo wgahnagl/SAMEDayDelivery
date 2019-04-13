@@ -1,9 +1,7 @@
 <!DOCTYPE html>
 <#include "../components/header.ftl">
 <script src = "js/customer/accountView.js"></script>
-
     <h2 style="margin: 20px;"> Account </h2>
-
     <div class="jumbotron">
         <div class="container">
             <h1 class="display-4">Address</h1>

@@ -16,7 +16,7 @@ public class PostSignUpRoute implements Route {
         final String password = request.queryParams("password");
 
         DBLiason.addCustomerByInfo(lastName, firstName, email, password);
-        request.session().attribute("currentUser", new User(email));
+        request.session().attribute("currentUser", new User(email, firstName, lastName));
 
         response.redirect("/account");
         return null;

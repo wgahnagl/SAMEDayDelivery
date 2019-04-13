@@ -5,6 +5,7 @@ import app.model.User;
 import app.util.Util;
 import spark.*;
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
@@ -20,8 +21,9 @@ public class PostSignInRoute implements Route {
         String password = request.queryParams("password");
 
         if(DBLiason.checkPassword(email, password)){
+            HashMap<String, String> names = DBLiason.getCustomerName(email);
             request.session().attribute("signInError", null);
-            request.session().attribute("currentUser", new User(email));
+            request.session().attribute("currentUser", new User(email, names.get("first_name"), names.get("last_name")));
         }else{
             request.session().attribute("signInError", "Invalid Password");
             response.redirect("/signin");
