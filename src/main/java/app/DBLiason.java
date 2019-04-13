@@ -342,6 +342,7 @@ public class DBLiason {
         String rowFmt = "%1, '%2', '%3', '%4', '%5', '%6', '%7', '%8', '%9', '%10'"; // Format that String into a values list
         String insertCmdFmt = "insert into Customer values (%s);"; // Put that values list into an sql statement
 
+        //TODO: is there no auto-increment in H2 ?
         ResultSet maxIdResult = statement.executeQuery("select max(ID) from Customer;");
         maxIdResult.first();
         int maxID = maxIdResult.getInt("MAX(ID)");

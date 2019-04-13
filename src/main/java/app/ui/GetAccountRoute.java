@@ -15,6 +15,16 @@ public class GetAccountRoute implements Route {
     @Override
     public Object handle(Request request, Response response) {
         Map<String, Object> vm = Util.getCurrentUser(request);
-        return templateEngine.render(new ModelAndView(vm, "accountView.ftl"));
+        vm.put("view" , request.host().split("\\.")[0]);
+
+        if(request.host().startsWith("admin")){
+            return templateEngine.render(new ModelAndView(vm, "admin/accountView.ftl"));
+        }
+        else if(request.host().startsWith("delivery")){
+            return templateEngine.render(new ModelAndView(vm, "delivery/accountView.ftl"));
+        }
+        else{
+            return templateEngine.render(new ModelAndView(vm, "customer/accountView.ftl"));
+        }
     }
 }

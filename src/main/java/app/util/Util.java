@@ -1,5 +1,6 @@
 package app.util;
 
+import app.model.User;
 import spark.Request;
 
 import java.util.HashMap;

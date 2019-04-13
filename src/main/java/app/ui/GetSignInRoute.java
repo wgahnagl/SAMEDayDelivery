@@ -15,6 +15,8 @@ public class GetSignInRoute implements Route {
     @Override
     public Object handle(Request request, Response response) {
         Map<String, Object> vm = Util.getCurrentUser(request);
+        vm.put("view" , request.host().split("\\.")[0]);
+
         return templateEngine.render(new ModelAndView(vm, "login.ftl"));
     }
 }
