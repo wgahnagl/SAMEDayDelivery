@@ -1,10 +1,8 @@
 package app.ui;
 
-import app.util.User;
 import app.util.Util;
 import spark.*;
 
-import java.util.HashMap;
 import java.util.Map;
 
 import java.util.Objects;

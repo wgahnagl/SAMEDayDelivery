@@ -4,7 +4,9 @@ import static spark.Spark.*;
 import java.util.Objects;
 
 import app.appl.*;
-import org.jcp.xml.dsig.internal.SignerOutputStream;
+import app.util.GetAddressDataRoute;
+import app.util.GetBankAccountDataRoute;
+import app.util.GetCreditCardDataRoute;
 import spark.TemplateEngine;
 
 public class WebServer {
@@ -17,8 +19,11 @@ public class WebServer {
     public static final String ACCOUNT_URL = "/account";
     public static final String FORGOT_PASSWORD_URL = "/password_recover";
     public static final String GET_ADDRESS_DATA_URL = "/get_address_data";
+    public static final String GET_CREDIT_CARD_DATA_URL = "/get_credit_card_data";
+    public static final String GET_BANK_ACCOUNT_DATA_URL = "get_bank_account_data";
     public static final String ADD_CREDIT_CARD_URL = "/add_credit_card";
     public static final String ADD_ADDRESS_URL  = "/add_address";
+    public static final String ADD_BANK_ACCOUNT_URL  = "/add_bank_account";
 
 
     private final TemplateEngine templateEngine;
@@ -37,15 +42,21 @@ public class WebServer {
 
         get(TRACKING_URL, new GetTrackingRoute(templateEngine));
         get(ACCOUNT_URL, new GetAccountRoute(templateEngine));
-        get(GET_ADDRESS_DATA_URL, new GetAddressRoute(templateEngine));
         get(ADD_CREDIT_CARD_URL, new GetAddCreditCardRoute(templateEngine));
         get(ADD_ADDRESS_URL, new GetAddAddressRoute(templateEngine));
+        get(ADD_BANK_ACCOUNT_URL, new GetAddBankAccountRoute(templateEngine));
+
+        get(GET_ADDRESS_DATA_URL, new GetAddressDataRoute());
+        get(GET_BANK_ACCOUNT_DATA_URL, new GetBankAccountDataRoute());
+        get(GET_CREDIT_CARD_DATA_URL, new GetCreditCardDataRoute());
 
         post(SIGNUP_URL, new PostSignUpRoute());
         post(SIGNIN_URL, new PostSignInRoute());
         post(SIGNOUT_URL, new PostSignOutRoute());
         post(ADD_CREDIT_CARD_URL, new PostAddCreditCardRoute());
         post(ADD_ADDRESS_URL, new PostAddAddressRoute());
+        post(ADD_BANK_ACCOUNT_URL, new PostAddBankAccountRoute());
+
 
 
     }

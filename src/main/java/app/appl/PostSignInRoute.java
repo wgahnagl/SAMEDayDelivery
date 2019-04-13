@@ -1,6 +1,6 @@
 package app.appl;
 
-import app.util.User;
+import app.model.User;
 import spark.Request;
 import spark.Response;
 import spark.Route;
