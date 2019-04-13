@@ -25,7 +25,6 @@ public class PostSignUpRoute implements Route {
         final String cc_number = request.queryParams("cc-number");
         final String cc_expiration = request.queryParams("cc-expiration");
         final String cc_cvv = request.queryParams("cc-cvv");
-        DBLiason.addCustomer(lastName, firstName, email, address, address2, city, state, zip, country);
 
         request.session().attribute("currentUser", new User(email));
 

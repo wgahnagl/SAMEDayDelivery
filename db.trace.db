@@ -913,3 +913,160 @@ select ID, name from customer [42122-198]
 2019-03-28 16:44:45 jdbc[3]: exception
 org.h2.jdbc.JdbcSQLSyntaxErrorException: Syntax error in SQL statement "SELECT ID, LAST_NAME, FIRST_NAME, FROM CUSTOMER [*]"; expected "., (, USE, AS, RIGHT, LEFT, FULL, INNER, JOIN, CROSS, NATURAL, ,, SELECT"; SQL statement:
 select ID, last_name, first_name, from customer [42001-198]
+2019-04-09 16:39:25 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLException: Table "CUSTOMERBANKACCOUNT" already exists; SQL statement:
+create table customerBankAccount(customer_id int, acct_number varchar(255),primary key (customer_id, acct_number), foreign key (customer_id) references customer(ID), ); [42101-197]
+2019-04-09 18:23:32 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLException: Column "LAST_NAME" not found; SQL statement:
+select ID, last_name, first_name from package [42122-197]
+	at org.h2.message.DbException.getJdbcSQLException(DbException.java:357)
+	at org.h2.message.DbException.get(DbException.java:179)
+	at org.h2.message.DbException.get(DbException.java:155)
+	at org.h2.expression.ExpressionColumn.optimize(ExpressionColumn.java:150)
+	at org.h2.command.dml.Select.prepare(Select.java:858)
+	at org.h2.command.Parser.prepareCommand(Parser.java:283)
+	at org.h2.engine.Session.prepareLocal(Session.java:611)
+	at org.h2.engine.Session.prepareCommand(Session.java:549)
+	at org.h2.jdbc.JdbcConnection.prepareCommand(JdbcConnection.java:1247)
+	at org.h2.jdbc.JdbcStatement.executeQuery(JdbcStatement.java:78)
+	at app.DBLiason.prettyCustomerList(DBLiason.java:507)
+	at app.DBLiason.main(DBLiason.java:554)
+2019-04-09 18:25:02 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLException: Column "LASTNAME" not found; SQL statement:
+select ID, lastName, firstName from package [42122-197]
+	at org.h2.message.DbException.getJdbcSQLException(DbException.java:357)
+	at org.h2.message.DbException.get(DbException.java:179)
+	at org.h2.message.DbException.get(DbException.java:155)
+	at org.h2.expression.ExpressionColumn.optimize(ExpressionColumn.java:150)
+	at org.h2.command.dml.Select.prepare(Select.java:858)
+	at org.h2.command.Parser.prepareCommand(Parser.java:283)
+	at org.h2.engine.Session.prepareLocal(Session.java:611)
+	at org.h2.engine.Session.prepareCommand(Session.java:549)
+	at org.h2.jdbc.JdbcConnection.prepareCommand(JdbcConnection.java:1247)
+	at org.h2.jdbc.JdbcStatement.executeQuery(JdbcStatement.java:78)
+	at app.DBLiason.prettyCustomerList(DBLiason.java:507)
+	at app.DBLiason.main(DBLiason.java:554)
+2019-04-09 18:31:27 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLException: Cannot parse "TIMESTAMP" constant "2" [22007-197]
+	at org.h2.message.DbException.getJdbcSQLException(DbException.java:357)
+	at org.h2.message.DbException.get(DbException.java:168)
+	at org.h2.value.ValueTimestamp.parse(ValueTimestamp.java:147)
+	at org.h2.value.Value.convertTo(Value.java:1071)
+	at org.h2.value.Value.convertTo(Value.java:617)
+	at org.h2.value.Value.convertTo(Value.java:592)
+	at org.h2.value.Value.getTimestamp(Value.java:444)
+	at org.h2.jdbc.JdbcResultSet.getTimestamp(JdbcResultSet.java:490)
+	at app.DBLiason.prettifyResultSet(DBLiason.java:327)
+	at app.DBLiason.prettyCustomerList(DBLiason.java:515)
+	at app.DBLiason.main(DBLiason.java:561)
+Caused by: java.lang.IllegalArgumentException: 2
+	at org.h2.util.DateTimeUtils.parseDateValue(DateTimeUtils.java:345)
+	at org.h2.util.DateTimeUtils.parseTimestamp(DateTimeUtils.java:460)
+	at org.h2.value.ValueTimestamp.parse(ValueTimestamp.java:145)
+	... 8 more
+2019-04-09 18:35:45 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLException: Column "IDhello" not found [42122-197]
+	at org.h2.message.DbException.getJdbcSQLException(DbException.java:357)
+	at org.h2.message.DbException.get(DbException.java:179)
+	at org.h2.message.DbException.get(DbException.java:155)
+	at org.h2.jdbc.JdbcResultSet.getColumnIndex(JdbcResultSet.java:3148)
+	at org.h2.jdbc.JdbcResultSet.get(JdbcResultSet.java:3247)
+	at org.h2.jdbc.JdbcResultSet.getInt(JdbcResultSet.java:346)
+	at app.DBLiason.prettifyResultSet(DBLiason.java:319)
+	at app.DBLiason.prettyCustomerList(DBLiason.java:519)
+	at app.DBLiason.main(DBLiason.java:565)
+2019-04-09 18:37:37 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLException: Column "ID)" not found [42122-197]
+	at org.h2.message.DbException.getJdbcSQLException(DbException.java:357)
+	at org.h2.message.DbException.get(DbException.java:179)
+	at org.h2.message.DbException.get(DbException.java:155)
+	at org.h2.jdbc.JdbcResultSet.getColumnIndex(JdbcResultSet.java:3148)
+	at org.h2.jdbc.JdbcResultSet.get(JdbcResultSet.java:3247)
+	at org.h2.jdbc.JdbcResultSet.getInt(JdbcResultSet.java:346)
+	at app.DBLiason.prettifyResultSet(DBLiason.java:319)
+	at app.DBLiason.prettyCustomerList(DBLiason.java:519)
+	at app.DBLiason.main(DBLiason.java:565)
+2019-04-11 15:38:14 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLException: Syntax error in SQL statement "SELECT FROM CUSTOMER WHERE[*] EMAIL = 'err2315@rit.edu'; "; expected "., (, USE, AS, RIGHT, LEFT, FULL, INNER, JOIN, CROSS, NATURAL, ,, SELECT"; SQL statement:
+select from customer where email = 'err2315@rit.edu'; [42001-197]
+2019-04-11 15:44:33 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLException: Syntax error in SQL statement "SELECT FROM CUSTOMER WHERE[*] ADDR_LINE1 = '60 Colony Manor Drive' AND ADDR_LINE2 = 'apt 109' AND CITY = 'Rochester' AND PROVINCE = 'New York' AND ZIPCODE = '14623' AND COUNTRY = 'USA' ; "; expected "., (, USE, AS, RIGHT, LEFT, FULL, INNER, JOIN, CROSS, NATURAL, ,, SELECT"; SQL statement:
+select from customer where addr_line1 = '60 Colony Manor Drive' and addr_line2 = 'apt 109' and city = 'Rochester' and province = 'New York' and zipcode = '14623' and country = 'USA' ; [42001-197]
+2019-04-11 15:45:30 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLException: Syntax error in SQL statement "UPDATE CUSTOMER SET ADDR_LINE1 = '60 Colony Manor Drive' SET[*] ADDR_LINE2 = 'apt 109' SET CITY = 'Rochester' SET PROVINCE = 'New York' SET ZIPCODE = '14623' SET COUNTRY = 'USA' WHERE ID = 401 "; SQL statement:
+update customer set addr_line1 = '60 Colony Manor Drive' set addr_line2 = 'apt 109' set city = 'Rochester' set province = 'New York' set zipcode = '14623' set country = 'USA' where ID = 401 [42000-197]
+2019-04-11 15:47:08 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLException: Syntax error in SQL statement "UPDATE CUSTOMER SET ADDR_LINE1 = '60 Colony Manor Drive', ADDR_LINE2 = 'apt 109', CITY = 'Rochester', PROVINCE = 'New York', ZIPCODE = '14623', COUNTRY = 'USA', WHERE[*] ID = 401 "; expected "identifier"; SQL statement:
+update customer set addr_line1 = '60 Colony Manor Drive', addr_line2 = 'apt 109', city = 'Rochester', province = 'New York', zipcode = '14623', country = 'USA', where ID = 401 [42001-197]
+2019-04-11 15:50:41 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLException: Syntax error in SQL statement "UPDATE CUSTOMER SETADDR_LINE1 =[*] '60 Colony Manor Drive', ADDR_LINE2 = 'apt 109', CITY = 'Rochester', PROVINCE = 'New York', ZIPCODE = '14623', COUNTRY = 'USA' WHERE ID = 401 "; expected "SET"; SQL statement:
+update customer setaddr_line1 = '60 Colony Manor Drive', addr_line2 = 'apt 109', city = 'Rochester', province = 'New York', zipcode = '14623', country = 'USA' where ID = 401 [42001-197]
+2019-04-11 15:51:09 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLException: Syntax error in SQL statement "UPDATE CUSTOMER SETADDR_LINE1 =[*] '60 Colony Manor Drive',   ADDR_LINE2 = 'apt 109',   CITY = 'Rochester',         PROVINCE = 'New York',     ZIPCODE = '14623',      COUNTRY = 'USA'       WHERE ID = 401 ;       "; expected "SET"; SQL statement:
+update customer setaddr_line1 = '60 Colony Manor Drive',   addr_line2 = 'apt 109',   city = 'Rochester',         province = 'New York',     zipcode = '14623',      country = 'USA'       where ID = 401 ;       [42001-197]
+2019-04-11 17:26:24 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLException: Column "PASSWORD" not found; SQL statement:
+insert into customer values (1, 'ben_newman73@comcast.net', password, 'Newman', 'Ben', '570 BIRR ST', null, 'ROCHESTER', 'NEW YORK', '14613', 'UNITED STATES'); [42122-197]
+	at org.h2.message.DbException.getJdbcSQLException(DbException.java:357)
+	at org.h2.message.DbException.get(DbException.java:179)
+	at org.h2.message.DbException.get(DbException.java:155)
+	at org.h2.expression.ExpressionColumn.optimize(ExpressionColumn.java:150)
+	at org.h2.command.dml.Insert.prepare(Insert.java:314)
+	at org.h2.command.Parser.prepareCommand(Parser.java:283)
+	at org.h2.engine.Session.prepareLocal(Session.java:611)
+	at org.h2.engine.Session.prepareCommand(Session.java:549)
+	at org.h2.jdbc.JdbcConnection.prepareCommand(JdbcConnection.java:1247)
+	at org.h2.jdbc.JdbcStatement.executeInternal(JdbcStatement.java:217)
+	at org.h2.jdbc.JdbcStatement.execute(JdbcStatement.java:205)
+	at app.DBLiason.populateTableFromCSV(DBLiason.java:270)
+	at app.DBLiason.setupCustomerTable(DBLiason.java:132)
+	at app.DBLiason.setupDB(DBLiason.java:65)
+	at app.DBLiason.main(DBLiason.java:587)
+2019-04-11 17:41:21 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLException: Column "PASSOWRD" not found; SQL statement:
+select ID from customer where email = 'err2315@rit.edu' and passowrd = 'password'; [42122-197]
+	at org.h2.message.DbException.getJdbcSQLException(DbException.java:357)
+	at org.h2.message.DbException.get(DbException.java:179)
+	at org.h2.message.DbException.get(DbException.java:155)
+	at org.h2.expression.ExpressionColumn.optimize(ExpressionColumn.java:150)
+	at org.h2.expression.Comparison.optimize(Comparison.java:177)
+	at org.h2.expression.ConditionAndOr.optimize(ConditionAndOr.java:131)
+	at org.h2.command.dml.Select.prepare(Select.java:861)
+	at org.h2.command.Parser.prepareCommand(Parser.java:283)
+	at org.h2.engine.Session.prepareLocal(Session.java:611)
+	at org.h2.engine.Session.prepareCommand(Session.java:549)
+	at org.h2.jdbc.JdbcConnection.prepareCommand(JdbcConnection.java:1247)
+	at org.h2.jdbc.JdbcStatement.executeQuery(JdbcStatement.java:78)
+	at app.DBLiason.checkPassword(DBLiason.java:587)
+	at app.DBLiason.main(DBLiason.java:634)
+2019-04-12 10:36:31 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLException: Syntax error in SQL statement "INSERT INTO CUSTOMERHASCREDITCARD VALUES (ERR2315@[*]RIT.EDU, 1); "; expected "., (, [, ::, *, /, %, +, -, ||, ~, !~, NOT, LIKE, ILIKE, REGEXP, IS, IN, BETWEEN, AND, OR, ,, )"; SQL statement:
+insert into customerHasCreditCard values (err2315@rit.edu, 1); [42001-197]
+2019-04-12 10:36:49 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLException: Data conversion error converting "'err2315@rit.edu' (CUSTOMERHASCREDITCARD: CUSTOMER_ID INT NOT NULL)"; SQL statement:
+insert into customerHasCreditCard values ('err2315@rit.edu', '1') -- ('err2315@rit.edu', '1') [22018-197]
+2019-04-12 10:42:15 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLException: Syntax error in SQL statement "SELECT CARD_NUM FROM CUSTOMERHASCREDITCARD WHERE EMAIL = ERR2315@[*]RIT.EDU; "; SQL statement:
+select card_num from customerHasCreditCard where email = err2315@rit.edu; [42000-197]
+2019-04-12 10:43:17 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLException: Column "ID" not found; SQL statement:
+select card_num from customerHasCreditCard where id = 401; [42122-197]
+	at org.h2.message.DbException.getJdbcSQLException(DbException.java:357)
+	at org.h2.message.DbException.get(DbException.java:179)
+	at org.h2.message.DbException.get(DbException.java:155)
+	at org.h2.expression.ExpressionColumn.optimize(ExpressionColumn.java:150)
+	at org.h2.expression.Comparison.optimize(Comparison.java:177)
+	at org.h2.command.dml.Select.prepare(Select.java:861)
+	at org.h2.command.Parser.prepareCommand(Parser.java:283)
+	at org.h2.engine.Session.prepareLocal(Session.java:611)
+	at org.h2.engine.Session.prepareCommand(Session.java:549)
+	at org.h2.jdbc.JdbcConnection.prepareCommand(JdbcConnection.java:1247)
+	at org.h2.jdbc.JdbcStatement.executeQuery(JdbcStatement.java:78)
+	at app.DBLiason.getCreditCardsForCustomer(DBLiason.java:603)
+	at app.DBLiason.main(DBLiason.java:687)
+2019-04-12 14:29:12 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLException: Syntax error in SQL statement "%[*]D "; SQL statement:
+%d [42000-197]
+2019-04-13 13:58:24 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLException: Syntax error in SQL statement "UPDATE CUSTOMER SET ADDR_LINE1 = '60 Colony Manor Drive',   ADDR_LINE2 = 'apt 109',   CITY = 'Rochester',         PROVINCE = 'New York',     ZIPCODE = '14623',      COUNTRY = 'USA'       WHERE ID = %[*]7 ;       "; expected "ALL, ANY, SOME, SELECT, FROM, WITH"; SQL statement:
+update customer set addr_line1 = '60 Colony Manor Drive',   addr_line2 = 'apt 109',   city = 'Rochester',         province = 'New York',     zipcode = '14623',      country = 'USA'       where ID = %7 ;       [42001-197]
