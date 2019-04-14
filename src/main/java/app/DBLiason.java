@@ -109,6 +109,7 @@ public class DBLiason {
             setupCustomerCreditCardTable();
             setupCustomerPhoneTable();
             setupPackageSpecialInfoTable();
+            setupTripPackageTable();
 
         } catch(SQLException sqle) {
             sqle.printStackTrace();
