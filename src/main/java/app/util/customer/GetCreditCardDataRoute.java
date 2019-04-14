@@ -15,5 +15,6 @@ public class GetCreditCardDataRoute implements Route {
         request.session().attribute("creditCard", creditCard);
         response.status(200);
         Gson gson = new Gson();
-        return gson.toJson(creditCard);    }
+        return gson.toJson(creditCard);
+    }
 }

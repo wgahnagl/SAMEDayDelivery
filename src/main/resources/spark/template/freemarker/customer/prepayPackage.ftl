@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <#include "../components/header.ftl">
-<div class="container-fluid">
+<h2 style="margin: 20px;"> Prepay Package </h2>
+
+<div class="jumbotron">
     <div class="container">
         <form role="form" method="POST" action="/prepay_package">
             <fieldset>
