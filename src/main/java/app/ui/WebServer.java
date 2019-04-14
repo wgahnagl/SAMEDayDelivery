@@ -6,10 +6,7 @@ import java.util.Objects;
 import app.appl.*;
 import app.appl.customer.*;
 import app.ui.customer.*;
-import app.util.customer.GetAddressDataRoute;
-import app.util.customer.GetBankAccountDataRoute;
-import app.util.customer.GetCreditCardDataRoute;
-import app.util.customer.GetTrackingDataRoute;
+import app.util.customer.*;
 import spark.TemplateEngine;
 
 public class WebServer {
@@ -23,12 +20,13 @@ public class WebServer {
     public static final String TRACKING_URL = "/tracking";
     public static final String ACCOUNT_URL = "/account";
     public static final String CREATE_LABEL_URL = "create_label";
-    public static final String COMMISSION_PACKAGE_URL = "commission_package";
+    public static final String PREPAY_PACKAGE_URL = "prepay_package";
 
     public static final String GET_ADDRESS_DATA_URL = "/get_address_data";
     public static final String GET_CREDIT_CARD_DATA_URL = "/get_credit_card_data";
     public static final String GET_BANK_ACCOUNT_DATA_URL = "get_bank_account_data";
     public static final String GET_TRACKING_DATA_URL = "/get_tracking_data";
+    public static final String GET_PACKAGE_DATA_URL = "/get_package_data";
 
     public static final String ADD_CREDIT_CARD_URL = "/add_credit_card";
     public static final String ADD_ADDRESS_URL  = "/add_address";
@@ -47,7 +45,7 @@ public class WebServer {
         get(HOME_URL, new GetHomeRoute(templateEngine));
         get(SIGNIN_URL, new GetSignInRoute(templateEngine));
         get(SIGNUP_URL, new GetSignUpRoute(templateEngine));
-        get(COMMISSION_PACKAGE_URL, new GetCommissionPackageRoute(templateEngine));
+        get(PREPAY_PACKAGE_URL, new GetPrepaidPackageRoute(templateEngine));
         get(CREATE_LABEL_URL, new GetCreateLabelroute(templateEngine));
         get(FORGOT_PASSWORD_URL, new GetPasswordRecoverRoute(templateEngine));
 
@@ -61,12 +59,13 @@ public class WebServer {
         get(GET_BANK_ACCOUNT_DATA_URL, new GetBankAccountDataRoute());
         get(GET_CREDIT_CARD_DATA_URL, new GetCreditCardDataRoute());
         get(GET_TRACKING_DATA_URL, new GetTrackingDataRoute());
+        get(GET_PACKAGE_DATA_URL, new GetPackageDataRoute());
 
+        post(SIGNIN_URL, new PostSignInRoute(templateEngine));
         post(SIGNUP_URL, new PostSignUpRoute());
-        post(SIGNIN_URL, new PostSignInRoute());
         post(SIGNOUT_URL, new PostSignOutRoute());
         post(CREATE_LABEL_URL, new PostCreateLabel());
-        post(COMMISSION_PACKAGE_URL, new PostCommissionPackage());
+        post(PREPAY_PACKAGE_URL, new PostPrepaidPackageRoute());
         post(ADD_CREDIT_CARD_URL, new PostAddCreditCardRoute());
         post(ADD_ADDRESS_URL, new PostAddAddressRoute());
         post(ADD_BANK_ACCOUNT_URL, new PostAddBankAccountRoute());

@@ -1,4 +1,4 @@
-<h4 class="mb-3">Address</h4>
+
 <div class="row">
     <div class="col-md-9 mb-3">
         <label for="address">Address</label>
@@ -14,8 +14,6 @@
             Please enter your city
         </div>
     </div>
-
-
 </div>
 
 <div class="mb-3">

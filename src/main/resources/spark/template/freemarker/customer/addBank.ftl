@@ -2,7 +2,7 @@
 <#include "../components/header.ftl">
 <div class="container-fluid">
     <div class="container">
-        <form role="form" id="accountCreateForm" method="POST" action="/add_credit_card">
+        <form role="form" method="POST" action="/add_bank_account">
             <fieldset>
                 <div class="row">
                     <div class="col-md-12 order-md-1" >
@@ -12,7 +12,7 @@
                             </div>
                         </#if>
                         <form class="needs-validation" novalidate="">
-                            <#include "components/addCreditCard.ftl">
+                            <#include "components/addBank.ftl">
                             <button class="btn btn-primary btn-lg btn-block" id="addAddressSubmit" type="submit" >Submit</button>
                         </form>
                     </div>

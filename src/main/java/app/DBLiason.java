@@ -200,7 +200,7 @@ public class DBLiason {
                 "country varchar(255)," +
 
                 "unique (email)," +
-                          
+
                 ");"
         );
 
@@ -292,6 +292,7 @@ public class DBLiason {
                 "foreign key (customer_id) references Customer(ID), " +
                 ");");
 
+
         populateTableFromCSV("CustomerPhone", "TestData/customerPhone.csv", "%1, '%2'");
     }
     private static void setupCustomerBankAccountTable() throws SQLException {
@@ -306,6 +307,7 @@ public class DBLiason {
                 "primary key (customer_id, acct_num), " +
                 "foreign key (customer_id) references customer(ID), " +
                 ");");
+
 
         populateTableFromCSV("CustomerBankAccount", "TestData/customerBankAccount.csv", "%1, '%2', '%3'");
     }
@@ -325,6 +327,7 @@ public class DBLiason {
                 "foreign key (customer_id) references Customer(ID), " +
                 ");");
 
+
         populateTableFromCSV("CustomerCreditCard", "TestData/customerCreditCard.csv", "%1, '%2', '%3', '%4', '%5'");
     }
     private static void setupPackageSpecialInfoTable() throws SQLException {
@@ -340,6 +343,7 @@ public class DBLiason {
                 "foreign key (special_info_id) references SpecialInfo(ID), " +
                 ");");
 
+
         populateTableFromCSV("PackageSpecialInfo", "TestData/packageSpecialInfo.csv", "%1,'%2'");
     }
     private static void setupTripPackageTable() throws SQLException {
@@ -353,7 +357,6 @@ public class DBLiason {
 
         populateTableFromCSV("TripPackage", "TestData/tripPackage.csv", "%1,%2");
     }
-
     private static void populateTableFromCSV(String tablename, String filename, String reformat) {
         // Helper method to populate a table from a CSV file
         // If reformat parameter is specified, it should look something like "'%1', %2, (%3)"
@@ -567,7 +570,7 @@ public class DBLiason {
 
 
         statement.execute( cmd );
-        
+
         return true;
     }
     public static boolean linkCreditCard( String email, String card_name, String card_num, String expiration, String cvv ) throws SQLException {
@@ -609,6 +612,7 @@ public class DBLiason {
 
         int id = getCustomerByEmail( email );
         if(id < 0) return false;
+
 
         String cmdFmt = "insert into CustomerPhone values( %1, '%2' );";
         String cmd = formatCommand( cmdFmt, Integer.toString(id), phone_num );
@@ -690,6 +694,21 @@ public class DBLiason {
 
         return result;
     }
+    public static HashMap <String ,String> getNameForCustomer(String email) throws SQLException {
+        String cmdFmt = "select first_name, last_name from customer where email = '%1'";
+        String cmd = formatCommand( cmdFmt, email );
+        Statement statement = connection.createStatement();
+
+        ResultSet rs = statement.executeQuery( cmd );
+        rs.first();
+
+        HashMap<String, String> name = new HashMap<String, String>();
+        for(String key : new String[] {"first_name", "last_name"}) {
+            name.put( key, rs.getString(key) );
+        }
+
+        return name;
+    }
     public static boolean checkPassword( String email, String password ) throws SQLException {
         // Return true if the customer with the given email has the given password
         // ( Returns false if the password is incorrect or if no such customer exists )
@@ -726,7 +745,7 @@ public class DBLiason {
         double priceCents = type.basePriceCents; // For example, 500.00 would be **5** dollars (not 500 dollars)
         priceCents *= expediency.priceMultiplier;
         if( weight_in_grams > type.maxWeightGrams ) priceCents *= 1.5;
-        
+
         return (int) priceCents; // Round down to nearest cent
     }
 
@@ -844,35 +863,11 @@ public class DBLiason {
                 receiver_pays, already_paid);
     }
 
-    public static ArrayList<HashMap<String, String>> getUndeliveredPackagesToCustomer( String email ) throws SQLException {
-        // UNDER CONSTRUCTION
-        int id = getCustomerByEmail( email );
-        if(id < 0) return null;
-
-        String cmdFmt = "select Package.id, Package.ship_timestamp, Package.expected_delivery, Package.delivery_timestamp, " +
-                " Package.type, Package.weight, Package.price, Package.receiver_pays, Package.paid_flag " +
-                " Customer.last_name, Customer_first_name " +
-                " from ( Package join Customer on Package.origin_customer_id = Customer.id ) " +
-                " where Customer.email = '%1';";
-
-        String cmd = formatCommand( cmdFmt, email );
-        Statement statement = connection.createStatement();
-        ResultSet rs = statement.executeQuery( cmd );
-
-        ArrayList<HashMap<String, String>> result = new ArrayList<>();
-
-        while( rs.next() ) {
-            HashMap<String, String> pkg = new HashMap<>();
-            pkg.put("id", Integer.toString(rs.getInt("Package.id")) );
-            pkg.put("ship_timestamp", rs.getTimestamp("Package.ship_timestamp").toString() );
-            pkg.put("expected_delivery", rs.getTimestamp( "Package.expected_delivery").toString() );
-            //pkg.put("delivery_timestamp", rs.get)
-        }
-
-        return null;
+    public static boolean createLabel(String email, String address1, String address2, String city, String state, String zip, String country, String expediency, String packageType, String weight){
+        return true;
     }
 
-
+    
     /* Specific query utilities */
 
     public static ResultSet getLatePackages() throws SQLException {

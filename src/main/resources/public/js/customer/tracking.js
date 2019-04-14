@@ -1,8 +1,7 @@
 $(function() {
-    $.get("/get_address_data",
+    $.get("/get_customer_packages",
         function (response) {
-            console.log("does it exist?");
-            console.log(response.address);
+            console.log(response);
         }
     );
 }
