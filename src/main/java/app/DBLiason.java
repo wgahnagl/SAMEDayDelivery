@@ -344,6 +344,11 @@ public class DBLiason {
         String result = formatString;
 
         for(int i = 0; i < values.length; i++) {
+            // If it's actually inserted as a string and it's null, get rid of surrounding quotes
+            if(values[i] == null)
+                while( result.contains( "'%" + (i+1) + "'") )
+                    result = result.replaceFirst( "'%" + (i+1) + "'", "null" );
+
             while(result.contains("%" + (i+1)))
                 result = result.replaceFirst( "%" + (i+1), escapeSingleQuotes(values[i]) );
         }
@@ -790,7 +795,7 @@ public class DBLiason {
     /* Methods to get pretty-prints of various tables and subset of tables */
 
     public static String prettyPackageList() {
-        // Return a String of a newline-separated list of all the packages in the DB
+        // Return a String that is a pretty representation of all the packages in the package table
 
         ArrayList<String> prettified;
 
@@ -956,7 +961,6 @@ public class DBLiason {
     }
 
 
-
     /* Specific query utilities */
 
     public static ResultSet getLatePackages() throws SQLException {
@@ -990,10 +994,21 @@ public class DBLiason {
             sqle.printStackTrace();
         }
 
-        // Print out all packages (none right now)
+        // Scan a package and then print out all packages
 
-        System.out.println("PACKAGE TABLE PRINTOUT:");
-        System.out.println(prettyPackageList());
+        try {
+            scanPackage(
+                    "60 Colony Manor Drive", "apt 109", "Rochester", "New York", "14623", "USA",
+                    "69 Blazeit Drive", null, "New York", "New York", "19999", "USA",
+                    Expediency.TWODAY, PackageType.PACKAGE_LARGE, 12010, false, true
+            );
+
+            System.out.println("PACKAGE TABLE PRINTOUT:");
+            System.out.println(prettyPackageList());
+        } catch(SQLException sqle) {
+            sqle.printStackTrace();
+        }
+
 
         // Print out all customers
 
