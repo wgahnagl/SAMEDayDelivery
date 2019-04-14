@@ -6,10 +6,10 @@ import spark.*;
 import java.util.Map;
 import java.util.Objects;
 
-public class GetCommissionPackageRoute implements Route {
+public class GetPrepaidPackageRoute implements Route {
     private final TemplateEngine templateEngine;
 
-    public GetCommissionPackageRoute(TemplateEngine templateEngine) {
+    public GetPrepaidPackageRoute(TemplateEngine templateEngine) {
         this.templateEngine = Objects.requireNonNull(templateEngine, "templateEngine is required");
     }
 
@@ -17,6 +17,6 @@ public class GetCommissionPackageRoute implements Route {
     public Object handle(Request request, Response response) throws Exception {
         Map<String, Object> vm = Util.getCurrentUser(request);
         vm.put("view" , request.host().split("\\.")[0]);
-        return templateEngine.render(new ModelAndView(vm, "customer/commissionPackage.ftl"));
+        return templateEngine.render(new ModelAndView(vm, "customer/prepayPackage.ftl"));
     }
 }

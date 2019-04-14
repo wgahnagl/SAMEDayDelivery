@@ -23,7 +23,7 @@ public class WebServer {
     public static final String TRACKING_URL = "/tracking";
     public static final String ACCOUNT_URL = "/account";
     public static final String CREATE_LABEL_URL = "create_label";
-    public static final String COMMISSION_PACKAGE_URL = "commission_package";
+    public static final String PREPAY_PACKAGE_URL = "prepay_package";
 
     public static final String GET_ADDRESS_DATA_URL = "/get_address_data";
     public static final String GET_CREDIT_CARD_DATA_URL = "/get_credit_card_data";
@@ -47,7 +47,7 @@ public class WebServer {
         get(HOME_URL, new GetHomeRoute(templateEngine));
         get(SIGNIN_URL, new GetSignInRoute(templateEngine));
         get(SIGNUP_URL, new GetSignUpRoute(templateEngine));
-        get(COMMISSION_PACKAGE_URL, new GetCommissionPackageRoute(templateEngine));
+        get(PREPAY_PACKAGE_URL, new GetPrepaidPackageRoute(templateEngine));
         get(CREATE_LABEL_URL, new GetCreateLabelroute(templateEngine));
         get(FORGOT_PASSWORD_URL, new GetPasswordRecoverRoute(templateEngine));
 
@@ -66,7 +66,7 @@ public class WebServer {
         post(SIGNUP_URL, new PostSignUpRoute());
         post(SIGNOUT_URL, new PostSignOutRoute());
         post(CREATE_LABEL_URL, new PostCreateLabel());
-        post(COMMISSION_PACKAGE_URL, new PostCommissionPackage());
+        post(PREPAY_PACKAGE_URL, new PostPrepaidPackageRoute());
         post(ADD_CREDIT_CARD_URL, new PostAddCreditCardRoute());
         post(ADD_ADDRESS_URL, new PostAddAddressRoute());
         post(ADD_BANK_ACCOUNT_URL, new PostAddBankAccountRoute());
