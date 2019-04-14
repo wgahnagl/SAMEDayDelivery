@@ -2,6 +2,7 @@
 package app;
 
 
+import javax.xml.transform.Result;
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
@@ -150,9 +151,6 @@ public class DBLiason {
                 String[] values = line.split(",");
 
                 long ship_timestamp = Long.parseLong(values[0]);
-                while(ship_timestamp > 1555223025L) {
-                    ship_timestamp -=   100000000L;
-                }
 
                 int origin_id = Integer.parseInt(values[1]);
                 int dest_id = Integer.parseInt(values[2]);
@@ -235,6 +233,9 @@ public class DBLiason {
                 "foreign key (carrier) references Carrier(id)" +
 
                 ");");
+
+        populateTableFromCSV("Trip", "TestData/trip.csv",
+                "");
     }
     private static void setupCarrierTable() throws SQLException {
         Statement statement = connection.createStatement();
@@ -334,6 +335,17 @@ public class DBLiason {
                 ");");
 
         populateTableFromCSV("PackageSpecialInfo", "TestData/packageSpecialInfo.csv", "%1,'%2'");
+    }
+    private static void setupTripPackageTable() throws SQLException {
+        Statement statement = connection.createStatement();
+
+        statement.execute("drop table TripPackage if exists");
+        statement.execute("create table TripPackage(" +
+                "trip_id int, " +
+                "package_id int" +
+                ");");
+
+        populateTableFromCSV("TripPackage", "TestData/tripPackage.csv", "%1,%2");
     }
 
     private static void populateTableFromCSV(String tablename, String filename, String reformat) {
@@ -824,6 +836,34 @@ public class DBLiason {
                 System.currentTimeMillis()/1000, expediency,
                 type, weight_in_grams,
                 receiver_pays, already_paid);
+    }
+
+    public static ArrayList<HashMap<String, String>> getUndeliveredPackagesToCustomer( String email ) throws SQLException {
+        // UNDER CONSTRUCTION
+        int id = getCustomerByEmail( email );
+        if(id < 0) return null;
+
+        String cmdFmt = "select Package.id, Package.ship_timestamp, Package.expected_delivery, Package.delivery_timestamp, " +
+                " Package.type, Package.weight, Package.price, Package.receiver_pays, Package.paid_flag " +
+                " Customer.last_name, Customer_first_name " +
+                " from ( Package join Customer on Package.origin_customer_id = Customer.id ) " +
+                " where Customer.email = '%1';";
+
+        String cmd = formatCommand( cmdFmt, email );
+        Statement statement = connection.createStatement();
+        ResultSet rs = statement.executeQuery( cmd );
+
+        ArrayList<HashMap<String, String>> result = new ArrayList<>();
+
+        while( rs.next() ) {
+            HashMap<String, String> pkg = new HashMap<>();
+            pkg.put("id", Integer.toString(rs.getInt("Package.id")) );
+            pkg.put("ship_timestamp", rs.getTimestamp("Package.ship_timestamp").toString() );
+            pkg.put("expected_delivery", rs.getTimestamp( "Package.expected_delivery").toString() );
+            //pkg.put("delivery_timestamp", rs.get)
+        }
+
+        return null;
     }
 
 
