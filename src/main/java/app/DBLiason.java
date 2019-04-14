@@ -202,7 +202,7 @@ public class DBLiason {
                 "country varchar(255)," +
 
                 "unique (email)," +
-                          
+
                 ");"
         );
 
@@ -626,7 +626,7 @@ public class DBLiason {
 
 
         statement.execute( cmd );
-        
+
         return true;
     }
 
@@ -645,7 +645,7 @@ public class DBLiason {
         return true;
     }
 
-    private static boolean linkBankAccount( String email, String acct_num, String routing_num ) throws SQLException {
+    public static boolean linkBankAccount( String email, String acct_num, String routing_num ) throws SQLException {
         // Link a given customer account to a bank account number (this DOES delete any previously-linked accounts)
         // Returns true on success, false on failure
 
@@ -702,7 +702,7 @@ public class DBLiason {
         double priceCents = type.basePriceCents; // For example, 500.00 would be **5** dollars (not 500 dollars)
         priceCents *= expediency.priceMultiplier;
         if( weight_in_grams > type.maxWeightGrams ) priceCents *= 1.5;
-        
+
         return (int) priceCents; // Round down to nearest cent
     }
 
@@ -1005,6 +1005,7 @@ public class DBLiason {
     public static HashMap <String ,String> getCustomerName(String email) throws SQLException {
         String cmdFmt = "select first_name, last_name from customer where email = '%1'";
         String cmd = formatCommand( cmdFmt, email );
+        Statement statement = connection.createStatement();
 
         ResultSet rs = statement.executeQuery( cmd );
         rs.first();
