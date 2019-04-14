@@ -34,6 +34,11 @@ public class DBLiason {
     // Initialization of the above two variables (a stupid hack to work around the fact
     // that the variables are final, yet their initialization can throw an Exception)
     static {
+        try {
+            Class.forName (JDBC_DRIVER);
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        }
         Connection connectionTemp = null;
         Statement statementTemp = null;
         try {
@@ -102,10 +107,10 @@ public class DBLiason {
             setupCustomerTable();
             setupPackageTable();
 
-            setupCustomerHasBankAccountTable();
-            setupCustomerHasCreditCardTable();
-            setupCustomerHasPhoneTable();
-            setupPackageHasSpecialInfoTable();
+            setupCustomerBankAccountTable();
+            setupCustomerCreditCardTable();
+            setupCustomerPhoneTable();
+            setupPackageSpecialInfoTable();
 
         } catch(SQLException sqle) {
             sqle.printStackTrace();
@@ -115,8 +120,8 @@ public class DBLiason {
     }
 
     private static void setupPackageTable() throws SQLException {
-        statement.execute("drop table package if exists;");
-        statement.execute("create table package (" +
+        statement.execute("drop table Package if exists;");
+        statement.execute("create table Package (" +
                 "ID                   int primary key," +
 
                 "origin_customer_id   int," +     // origin_customer_id and dest_customer_id are both
@@ -134,8 +139,8 @@ public class DBLiason {
                 "paid_for             boolean, " + // True when the package has been paid for (can be false for monthly-billed customers)
                 "signature            image, " +
 
-                "foreign key (origin_customer_id) references customer(id)," +
-                "foreign key (dest_customer_id) references customer(id)" +
+                "foreign key (origin_customer_id) references Customer(id)," +
+                "foreign key (dest_customer_id) references Customer(id)" +
 
                 ");");
 
@@ -179,8 +184,8 @@ public class DBLiason {
         }
     }
     private static void setupCustomerTable() throws SQLException {
-        statement.execute("drop table customer if exists;");
-        statement.execute("create table customer (" +
+        statement.execute("drop table Customer if exists;");
+        statement.execute("create table Customer (" +
                 "ID int primary key," +
 
                 "email varchar(255)," +
@@ -210,8 +215,8 @@ public class DBLiason {
                 "%1, '%4', 'password', '%2', '%3', '%5', null, '%6', '%7', '%8', '%9'");
     }
     private static void setupTripTable() throws SQLException {
-        statement.execute("drop table trip if exists;");
-        statement.execute("create table trip(" +
+        statement.execute("drop table Trip if exists;");
+        statement.execute("create table Trip(" +
                 "ID int primary key, " +
 
                 "start_time timestamp, " +
@@ -223,15 +228,15 @@ public class DBLiason {
                 "carrier int, " +
                 "fail_flag bit, " +
 
-                "foreign key (origin) references warehouse(id), " +
-                "foreign key (destination) references warehouse(id), " +
-                "foreign key (carrier) references carrier(id)" +
+                "foreign key (origin) references Warehouse(id), " +
+                "foreign key (destination) references Warehouse(id), " +
+                "foreign key (carrier) references Carrier(id)" +
 
                 ");");
     }
     private static void setupCarrierTable() throws SQLException {
-        statement.execute("drop table carrier if exists");
-        statement.execute("create table carrier(" +
+        statement.execute("drop table Carrier if exists");
+        statement.execute("create table Carrier(" +
                 "ID int primary key, " +
                 "type varchar(255), " +
                 ");");
@@ -239,8 +244,8 @@ public class DBLiason {
         populateTableFromCSV("carrier", "TestData/carrier.csv", "%1,'%2'");
     }
     private static void setupWarehouseTable() throws SQLException {
-        statement.execute("drop table warehouse if exists;");
-        statement.execute("create table warehouse(" +
+        statement.execute("drop table Warehouse if exists;");
+        statement.execute("create table Warehouse(" +
                 "ID int primary key, " +
                 "address_line1 varchar(255), " +
                 "city varchar(255), " +
@@ -252,29 +257,31 @@ public class DBLiason {
         populateTableFromCSV( "Warehouse", "TestData/warehouse.csv", "%1, '%2', '%3', '%4', '%5'" );
     }
     private static void setupSpecialInfoTable() throws SQLException {
-        statement.execute("drop table specialInfo if exists;");
-        statement.execute("create table specialinfo(" +
+        statement.execute("drop table SpecialInfo if exists;");
+        statement.execute("create table SpecialInfo(" +
                 "ID int primary key, " +
                 "info varchar(255), " +
                 ");");
 
-        populateTableFromCSV("specialInfo", "TestData/specialInfo.csv", "%1, '%2'");
+        populateTableFromCSV("SpecialInfo", "TestData/specialInfo.csv", "%1, '%2'");
     }
-    private static void setupCustomerHasPhoneTable() throws SQLException {
-        statement.execute("drop table customerHasPhone if exists");
-        statement.execute("create table customerHasPhone(" +
+
+    private static void setupCustomerPhoneTable() throws SQLException {
+        statement.execute("drop table CustomerPhone if exists");
+        statement.execute("create table CustomerPhone(" +
                 "customer_id int, " +
                 "phone_num varchar(255), " +
 
                 "primary key (customer_id, phone_num), "  +
-                "foreign key (customer_id) references customer(ID), " +
+                "foreign key (customer_id) references Customer(ID), " +
                 ");");
 
-        populateTableFromCSV("customerHasPhone", "TestData/customerPhone.csv", "%1, '%2'");
+        populateTableFromCSV("CustomerPhone", "TestData/customerPhone.csv", "%1, '%2'");
     }
-    private static void setupCustomerHasBankAccountTable() throws SQLException {
-        statement.execute("drop table customerHasBankAccount if exists");
-        statement.execute("create table customerHasBankAccount(" +
+
+    private static void setupCustomerBankAccountTable() throws SQLException {
+        statement.execute("drop table CustomerBankAccount if exists");
+        statement.execute("create table CustomerBankAccount(" +
                 "customer_id int, " +
                 "acct_num varchar(255)," +
                 "routing_num varchar(255)," +
@@ -283,11 +290,12 @@ public class DBLiason {
                 "foreign key (customer_id) references customer(ID), " +
                 ");");
 
-        populateTableFromCSV("customerHasBankAccount", "TestData/customerBankAccount.csv", "%1, '%2', '%3'");
+        populateTableFromCSV("CustomerBankAccount", "TestData/customerBankAccount.csv", "%1, '%2', '%3'");
     }
-    private static void setupCustomerHasCreditCardTable() throws SQLException {
-        statement.execute("drop table customerHasCreditCard if exists");
-        statement.execute("create table customerHasCreditCard(" +
+
+    private static void setupCustomerCreditCardTable() throws SQLException {
+        statement.execute("drop table CustomerCreditCard if exists");
+        statement.execute("create table CustomerCreditCard(" +
                 "customer_id int, " +
 
                 "card_name varchar(255)," +
@@ -296,23 +304,23 @@ public class DBLiason {
                 "card_cvv varchar(4)," +
 
                 "primary key (customer_id, card_num)," +
-                "foreign key (customer_id) references customer(ID), " +
+                "foreign key (customer_id) references Customer(ID), " +
                 ");");
 
-        populateTableFromCSV("customerHasCreditCard", "TestData/customerCreditCard.csv", "%1, '%2', '%3', '%4', '%5'");
+        populateTableFromCSV("CustomerCreditCard", "TestData/customerCreditCard.csv", "%1, '%2', '%3', '%4', '%5'");
     }
-    private static void setupPackageHasSpecialInfoTable() throws SQLException {
-        statement.execute("drop table packageHasSpecialInfo if exists");
-        statement.execute("create table packageHasSpecialInfo(" +
+    private static void setupPackageSpecialInfoTable() throws SQLException {
+        statement.execute("drop table PackageSpecialInfo if exists");
+        statement.execute("create table PackageSpecialInfo(" +
                 "package_id int, " +
                 "special_info_id int," +
 
                 "primary key (package_id, special_info_id)," +
-                "foreign key (package_id) references package(ID), " +
-                "foreign key (special_info_id) references specialInfo(ID), " +
+                "foreign key (package_id) references Package(ID), " +
+                "foreign key (special_info_id) references SpecialInfo(ID), " +
                 ");");
 
-        populateTableFromCSV("packageHasSpecialInfo", "TestData/packageSpecialInfo.csv", "%1,'%2'");
+        populateTableFromCSV("PackageSpecialInfo", "TestData/packageSpecialInfo.csv", "%1,'%2'");
     }
 
 
@@ -455,7 +463,6 @@ public class DBLiason {
         return result.substring(1);
     }
 
-
     /* Manipulations of the customer table
      * LOW-LEVEL FUNCTIONS ONLY: LINK UI TO THESE FUNCTIONS WITH CAUTION, IF AT ALL
      */
@@ -477,6 +484,15 @@ public class DBLiason {
         if (!result.first()) return -1; // This should never happen
         return result.getInt("ID");
     }
+
+    public static void addCreditCard (String name, String number, String expiration, String CVV){
+        String valuesFMT = "%d, %s,%s, %s, %s";
+        String rowFMT = "%1, %2, %3, %4";
+        String insertCmdFmt = "insert into creditCard values (%s);";
+    }
+
+    // Todo: Generalize prettyPackageList and prettyCustomerList into prettyResults(ResultSet result, String format)
+    // which will take a string like "Package: %(d,id). Ship time: %(timestamp,ship_time)".
 
     private static int getCustomerByAddr( String addr_line1, String addr_line2, String city, String province, String zipcode, String country ) throws SQLException {
         // Return the ID of the customer with a given address, or -1 if no such customer is found
@@ -593,7 +609,7 @@ public class DBLiason {
         int id = getCustomerByEmail( email );
         if(id < 0) return false;
 
-        String cmdFmt = "insert into customerHasCreditCard values (%1, '%2', '%3', '%4', '%5');";
+        String cmdFmt = "insert into CustomerCreditCard values (%1, '%2', '%3', '%4', '%5');";
         String cmd = formatCommand( cmdFmt, Integer.toString(id), card_name, card_num, expiration, cvv);
 
         statement.execute( cmd );
@@ -607,11 +623,11 @@ public class DBLiason {
         int id = getCustomerByEmail( email );
         if(id < 0) return false;
 
-        String cmdFmt = "delete from customerHasBankAccount where customer_id = %1;";
+        String cmdFmt = "delete from CustomerBankAccount where customer_id = %1;";
         String cmd = formatCommand( cmdFmt, Integer.toString(id) );
         statement.execute( cmd );
 
-        cmdFmt = "insert into customerHasBankAccount values( %1, '%2', '%3' );";
+        cmdFmt = "insert into CustomerBankAccount values( %1, '%2', '%3' );";
         cmd = formatCommand( cmdFmt, Integer.toString(id), acct_num, routing_num );
         statement.execute( cmd );
 
@@ -625,7 +641,7 @@ public class DBLiason {
         int id = getCustomerByEmail( email );
         if(id < 0) return false;
 
-        String cmdFmt = "insert into customerHasPhone values( %1, '%2' );";
+        String cmdFmt = "insert into CustomerPhone values( %1, '%2' );";
         String cmd = formatCommand( cmdFmt, Integer.toString(id), phone_num );
 
         statement.execute( cmd );
@@ -834,7 +850,6 @@ public class DBLiason {
         }
     }
 
-
     /* General-purpose DB-accessing methods.
      * Use these to implement all the different functionality that is shared between
      * the graphical UI and the command-line UI.
@@ -866,7 +881,7 @@ public class DBLiason {
         int id = getCustomerByEmail( email );
         if(id < 0) return null;
 
-        String cmdFmt = "select * from customerHasBankAccount where customer_id = %1;";
+        String cmdFmt = "select * from CustomerBankAccount where customer_id = %1;";
         String cmd = formatCommand( cmdFmt, Integer.toString(id) );
 
         ResultSet rs = statement.executeQuery( cmd );
@@ -883,7 +898,7 @@ public class DBLiason {
         int id = getCustomerByEmail( email );
         if(id < 0) return null;
 
-        String cmdFmt = "select * from customerHasCreditCard where customer_id = %1;";
+        String cmdFmt = "select * from CustomerCreditCard where customer_id = %1;";
         String cmd = formatCommand( cmdFmt, Integer.toString(id) );
         ResultSet rs = statement.executeQuery( cmd );
 
@@ -903,7 +918,7 @@ public class DBLiason {
         int id = getCustomerByEmail( email );
         if(id < 0) return null;
 
-        String cmdFmt = "select phone_num from customerHasPhone where customer_id = %1;";
+        String cmdFmt = "select phone_num from CustomerPhone where customer_id = %1;";
         String cmd = formatCommand( cmdFmt, Integer.toString(id) );
         ResultSet rs = statement.executeQuery( cmd );
 
@@ -939,7 +954,7 @@ public class DBLiason {
     /* Specific query utilities */
 
     public static ResultSet getLatePackages() throws SQLException {
-        return statement.executeQuery("select * from package where delivery_timestamp is null and expected_delivery < current_timestamp");
+        return statement.executeQuery("select * from Package where delivery_timestamp is null and expected_delivery < current_timestamp");
     }
 
 

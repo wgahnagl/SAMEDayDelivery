@@ -1383,3 +1383,9 @@ insert into package values(1, 59, 243, dateadd(second, 11825789077, '1970-01-01'
 	at app.DBLiason.setupPackageTable(DBLiason.java:169)
 	at app.DBLiason.setupDB(DBLiason.java:103)
 	at app.DBLiason.main(DBLiason.java:933)
+2019-04-14 12:42:40 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLException: Table "CUSTOMERHASCREDITCARD" not found; SQL statement:
+insert into customerHasCreditCard values (5, 'Des Dessy', '4', '01/22', '123'); [42102-197]
+2019-04-14 12:43:16 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLException: Table "CUSTOMERHASCREDITCARD" not found; SQL statement:
+select * from customerHasCreditCard where customer_id = 401; [42102-197]

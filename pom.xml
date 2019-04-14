@@ -13,7 +13,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <jdk.version>1.8</jdk.version>
 
-        <!-- TestApplication build dependency versions -->
+        <!-- Application build dependency versions -->
         <maven.compiler.version>3.8.0</maven.compiler.version>
 
         <spark.version>2.7.2</spark.version>
@@ -37,7 +37,7 @@
                 <artifactId>exec-maven-plugin</artifactId>
                 <version>1.2.1</version>
                 <configuration>
-                    <mainClass>app.TestApplication</mainClass>
+                    <mainClass>app.Application</mainClass>
                     <arguments>
                     </arguments>
                 </configuration>
@@ -62,6 +62,13 @@
             <groupId>com.sparkjava</groupId>
             <artifactId>spark-template-velocity</artifactId>
             <version>2.3</version>
+        </dependency>
+
+        <!-- H2 Database Stuff -->
+        <dependency>
+            <groupId>com.h2database</groupId>
+            <artifactId>h2</artifactId>
+            <version>1.4.197</version> <!-- ex: 1.2.140 -->
         </dependency>
 
         <!-- Spark FreeMarker integration -->

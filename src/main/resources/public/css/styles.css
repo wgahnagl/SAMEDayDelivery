@@ -1,0 +1,19 @@
+.input-group-prepend span{
+    width: 50px;
+    background-color: lightgray;
+    color: black;
+    border:0 !important;
+}
+.login_btn{
+    color: black;
+    background-color: lightgray;
+    width: 100px;
+}
+.login_btn:hover{
+     color: black;
+     background-color: white;
+}
+
+.error{
+    border-color: red;
+}
