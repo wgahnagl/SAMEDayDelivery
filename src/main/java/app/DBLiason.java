@@ -427,11 +427,6 @@ public class DBLiason {
         return result.getInt("ID");
     }
 
-    public static void addCreditCard (String name, String number, String expiration, String CVV){
-        String valuesFMT = "%d, %s,%s, %s, %s";
-        String rowFMT = "%1, %2, %3, %4";
-        String insertCmdFmt = "insert into creditCard values (%s);";
-    }
 
     // Todo: Generalize prettyPackageList and prettyCustomerList into prettyResults(ResultSet result, String format)
     // which will take a string like "Package: %(d,id). Ship time: %(timestamp,ship_time)".

@@ -12,6 +12,17 @@
                                 </div>
                             </#if>
                             <form class="needs-validation" novalidate="">
+                                <h4 class="mb-3">Address</h4>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <label for="firstname">First Name</label>
+                                        <input type="text" class="form-control" id="firstname" value="${firstName ! "none"}" readonly>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label for="firstname">Last Name</label>
+                                        <input type="text" class="form-control" id="lastname" value="${lastName ! "none"}" readonly>
+                                    </div>
+                                </div>
                                 <#include "components/addAddress.ftl">
                                 <button class="btn btn-primary btn-lg btn-block" id="addAddressSubmit" type="submit" >Submit</button>
                             </form>

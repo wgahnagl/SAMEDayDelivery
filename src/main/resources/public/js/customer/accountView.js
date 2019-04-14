@@ -3,6 +3,11 @@ $(function(){
         function(response){
             var address = JSON.parse(response);
 
+            if(address){
+                $('#displayAddress').show();
+                $('#addAddress').hide();
+            }
+
             var zip = address['zipcode'];
             var country = address['country'];
             var province = address['province'];
@@ -10,6 +15,12 @@ $(function(){
             var addr_line2 = address['addr_line2'];
             var city = address['city'];
 
+            $('#zip').val(zip);
+            $('#country').val(country);
+            $('#state').val(province);
+            $('#address1').val(addr_line1);
+            $('#address2').val(addr_line2);
+            $('#city').val(city);
         }
     );
 

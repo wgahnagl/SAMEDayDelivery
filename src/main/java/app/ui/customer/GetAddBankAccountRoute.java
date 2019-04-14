@@ -16,6 +16,6 @@ public class GetAddBankAccountRoute implements Route {
     public Object handle(Request request, Response response) throws Exception {
         Map<String, Object> vm = Util.getCurrentUser(request);
         vm.put("view" , request.host().split("\\.")[0]);
-        return templateEngine.render(new ModelAndView(vm, "customer/addBankAccount.ftl"));
+        return templateEngine.render(new ModelAndView(vm, "customer/addBank.ftl"));
     }
 }

@@ -1,14 +1,4 @@
-<h4 class="mb-3">Address</h4>
-<div class="row">
-    <div class="col-md-6">
-        <label for="firstname">First Name</label>
-        <input type="text" class="form-control" id="firstname" value="${firstName ! "none"}" readonly>
-    </div>
-    <div class="col-md-6">
-        <label for="firstname">Last Name</label>
-        <input type="text" class="form-control" id="lastname" value="${lastName ! "none"}" readonly>
-    </div>
-</div>
+
 <div class="row">
     <div class="col-md-9 mb-3">
         <label for="address">Address</label>
