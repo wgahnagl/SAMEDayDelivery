@@ -2,6 +2,7 @@
 package app;
 
 
+import javax.swing.plaf.nimbus.State;
 import javax.xml.transform.Result;
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
@@ -937,6 +938,63 @@ public class DBLiason {
 
         return result;
     }
+    public static double getUnpaidIncomingPackageTotalOfCustomer( String email ) throws SQLException {
+        int id = getCustomerByEmail( email );
+        if(id < 0) return -1;
+
+        String cmdFmt = "select sum(price) from Package " +
+                "where dest_customer_id = %1 and receiver_pays = true and paid_for = false;";
+
+        String cmd = formatCommand( cmdFmt, Integer.toString(id) );
+        Statement statement = connection.createStatement();
+        ResultSet rs = statement.executeQuery( cmd );
+        rs.first();
+
+        return rs.getDouble("SUM(PRICE)");
+    }
+    public static double getUnpaidOutgoingPackageTotalOfCustomer( String email ) throws SQLException {
+        int id = getCustomerByEmail( email );
+        if(id < 0) return -1;
+
+        String cmdFmt = "select sum(price) from Package " +
+                "where origin_customer_id = %1 and receiver_pays = false and paid_for = false;";
+
+        String cmd = formatCommand( cmdFmt, Integer.toString(id) );
+        Statement statement = connection.createStatement();
+        ResultSet rs = statement.executeQuery( cmd );
+        rs.first();
+
+        return rs.getDouble("SUM(PRICE)");
+    }
+    public static boolean payAllUnpaidPackagesOfCustomer( String email ) throws SQLException {
+        int id = getCustomerByEmail( email );
+        if(id < 0) return false;
+
+        double incomingTotal = getUnpaidIncomingPackageTotalOfCustomer( email );
+        double outgoingTotal = getUnpaidOutgoingPackageTotalOfCustomer( email );
+
+        double total = incomingTotal + outgoingTotal;
+
+        String cmdFmt = "update Package set paid_for = true " +
+                "where (origin_customer_id = %1 and receiver_pays = false and paid_for = false)" +
+                "   or (dest_customer_id = %1 and receiver_pays = true and paid_for = false);";
+
+        String cmd = formatCommand( cmdFmt, Integer.toString(id) );
+        Statement statement = connection.createStatement();
+        statement.executeUpdate( cmd );
+
+        System.out.println( String.format("Charged $%.02f to the account of user %s", total, email) );
+        return true;
+    }
+    public static void payAllUnpaidPackages( ) throws SQLException {
+        String cmd = "select email from customer;";
+        Statement statement = connection.createStatement();
+        ResultSet rs = statement.executeQuery( cmd );
+
+        while(rs.next()) {
+            payAllUnpaidPackagesOfCustomer( rs.getString("email") );
+        }
+    }
 
     public static void scanPackage(
             String o_addr_line1, String o_addr_line2, String o_city, String o_province, String o_zipcode, String o_country,
@@ -1270,12 +1328,13 @@ public class DBLiason {
             sqle.printStackTrace();
         }
 
-        // Make sure getUndeliveredPackagesToCustomer() works
+        // Make sure getUndeliveredPackagesToCustomer() works, then pay all packages and check again
 
         try {
-            ArrayList<HashMap<String, String>> desIncomingPackages = getUndeliveredPackagesToCustomer( "desiree310@verizon.net" );
-            ArrayList<HashMap<String, String>> desUnpaidIncomingPackage = getUnpaidIncomingPackagesOfCustomer(  "desiree310@verizon.net" );
-            ArrayList<HashMap<String, String>> desUnpaidOutgoingPackage = getUnpaidOutgoingPackagesOfCustomer("desiree310@verizon.net" );
+            String email = "desiree310@verizon.net";
+            ArrayList<HashMap<String, String>> desIncomingPackages = getUndeliveredPackagesToCustomer( email );
+            ArrayList<HashMap<String, String>> desUnpaidIncomingPackage = getUnpaidIncomingPackagesOfCustomer( email );
+            ArrayList<HashMap<String, String>> desUnpaidOutgoingPackage = getUnpaidOutgoingPackagesOfCustomer( email );
 
             System.out.println();
             System.out.println("PACKAGES HEADING TO DES:");
@@ -1294,6 +1353,35 @@ public class DBLiason {
             for(HashMap<String, String> p : desUnpaidOutgoingPackage) {
                 System.out.println(p);
             }
+
+
+            System.out.println();
+            payAllUnpaidPackagesOfCustomer( email );
+
+
+            desIncomingPackages = getUndeliveredPackagesToCustomer( email );
+            desUnpaidIncomingPackage = getUnpaidIncomingPackagesOfCustomer( email );
+            desUnpaidOutgoingPackage = getUnpaidOutgoingPackagesOfCustomer( email );
+
+            System.out.println();
+            System.out.println("PACKAGES HEADING TO DES:");
+            for(HashMap<String, String> p : desIncomingPackages) {
+                System.out.println(p);
+            }
+
+            System.out.println();
+            System.out.println("UNPAID PACKAGES HEADING TO DES:");
+            for(HashMap<String, String> p : desUnpaidIncomingPackage) {
+                System.out.println(p);
+            }
+
+            System.out.println();
+            System.out.println("UNPAID PACKAGES SENT BY DES:");
+            for(HashMap<String, String> p : desUnpaidOutgoingPackage) {
+                System.out.println(p);
+            }
+
+            payAllUnpaidPackages();
 
         } catch( SQLException sqle ) {
             sqle.printStackTrace();
