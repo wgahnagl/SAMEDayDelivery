@@ -29,7 +29,6 @@ public class DBLiason {
 
     // Rope that ties Java to SQL
     private static final Connection connection;
-    private static final Statement statement;
 
     // Initialization of the above two variables (a stupid hack to work around the fact
     // that the variables are final, yet their initialization can throw an Exception)
@@ -39,11 +38,10 @@ public class DBLiason {
         } catch (ClassNotFoundException e) {
             e.printStackTrace();
         }
+
         Connection connectionTemp = null;
-        Statement statementTemp = null;
         try {
             connectionTemp = DriverManager.getConnection(DB_URL, USER, PASS);
-            statementTemp = connectionTemp.createStatement();
         } catch(SQLException sqle) {
             System.out.println("FATAL ERROR: Encountered SQLException while establishing connection to the database");
             System.out.println("Stack trace:");
@@ -51,7 +49,6 @@ public class DBLiason {
             System.exit(-1);
         }
         connection = connectionTemp;
-        statement = statementTemp;
     }
 
 
@@ -120,6 +117,7 @@ public class DBLiason {
     }
 
     private static void setupPackageTable() throws SQLException {
+        Statement statement = connection.createStatement();
         statement.execute("drop table Package if exists;");
         statement.execute("create table Package (" +
                 "ID                   int primary key," +
@@ -184,6 +182,8 @@ public class DBLiason {
         }
     }
     private static void setupCustomerTable() throws SQLException {
+        Statement statement = connection.createStatement();
+
         statement.execute("drop table Customer if exists;");
         statement.execute("create table Customer (" +
                 "ID int primary key," +
@@ -215,6 +215,8 @@ public class DBLiason {
                 "%1, '%4', 'password', '%2', '%3', '%5', null, '%6', '%7', '%8', '%9'");
     }
     private static void setupTripTable() throws SQLException {
+        Statement statement = connection.createStatement();
+
         statement.execute("drop table Trip if exists;");
         statement.execute("create table Trip(" +
                 "ID int primary key, " +
@@ -235,6 +237,8 @@ public class DBLiason {
                 ");");
     }
     private static void setupCarrierTable() throws SQLException {
+        Statement statement = connection.createStatement();
+
         statement.execute("drop table Carrier if exists");
         statement.execute("create table Carrier(" +
                 "ID int primary key, " +
@@ -244,6 +248,8 @@ public class DBLiason {
         populateTableFromCSV("carrier", "TestData/carrier.csv", "%1,'%2'");
     }
     private static void setupWarehouseTable() throws SQLException {
+        Statement statement = connection.createStatement();
+
         statement.execute("drop table Warehouse if exists;");
         statement.execute("create table Warehouse(" +
                 "ID int primary key, " +
@@ -257,6 +263,8 @@ public class DBLiason {
         populateTableFromCSV( "Warehouse", "TestData/warehouse.csv", "%1, '%2', '%3', '%4', '%5'" );
     }
     private static void setupSpecialInfoTable() throws SQLException {
+        Statement statement = connection.createStatement();
+
         statement.execute("drop table SpecialInfo if exists;");
         statement.execute("create table SpecialInfo(" +
                 "ID int primary key, " +
@@ -267,6 +275,8 @@ public class DBLiason {
     }
 
     private static void setupCustomerPhoneTable() throws SQLException {
+        Statement statement = connection.createStatement();
+
         statement.execute("drop table CustomerPhone if exists");
         statement.execute("create table CustomerPhone(" +
                 "customer_id int, " +
@@ -280,6 +290,8 @@ public class DBLiason {
     }
 
     private static void setupCustomerBankAccountTable() throws SQLException {
+        Statement statement = connection.createStatement();
+
         statement.execute("drop table CustomerBankAccount if exists");
         statement.execute("create table CustomerBankAccount(" +
                 "customer_id int, " +
@@ -294,6 +306,8 @@ public class DBLiason {
     }
 
     private static void setupCustomerCreditCardTable() throws SQLException {
+        Statement statement = connection.createStatement();
+
         statement.execute("drop table CustomerCreditCard if exists");
         statement.execute("create table CustomerCreditCard(" +
                 "customer_id int, " +
@@ -310,6 +324,8 @@ public class DBLiason {
         populateTableFromCSV("CustomerCreditCard", "TestData/customerCreditCard.csv", "%1, '%2', '%3', '%4', '%5'");
     }
     private static void setupPackageSpecialInfoTable() throws SQLException {
+        Statement statement = connection.createStatement();
+
         statement.execute("drop table PackageSpecialInfo if exists");
         statement.execute("create table PackageSpecialInfo(" +
                 "package_id int, " +
@@ -364,6 +380,7 @@ public class DBLiason {
         BufferedReader reader;
 
         try {
+            Statement statement = connection.createStatement();
             reader = new BufferedReader( new FileReader(filename)); // FileNotFoundException
             String line;   // Line read from the CSV
 
@@ -473,6 +490,8 @@ public class DBLiason {
      */
 
     private static int currentMaxCustomerID() throws SQLException {
+        Statement statement = connection.createStatement();
+
         ResultSet maxIdResult = statement.executeQuery("select max(ID) from customer;");
         maxIdResult.first();
         return maxIdResult.getInt("MAX(ID)");
@@ -481,6 +500,8 @@ public class DBLiason {
     private static int getCustomerByEmail( String email ) throws SQLException {
         // Return the ID of a customer with a given email address, or -1 if no such customer is found
         // (There should never be more than one customer with the same email address)
+
+        Statement statement = connection.createStatement();
 
         String cmdFmt = "select ID from customer where email = '%1';";
         String cmd = formatCommand( cmdFmt, email );
@@ -503,6 +524,7 @@ public class DBLiason {
         // Return the ID of the customer with a given address, or -1 if no such customer is found
         // (There should never (?) be more than one customer with the same address)
 
+        Statement statement = connection.createStatement();
         String cmdFmt = "select ID from customer where " +
                 "addr_line1 = '%1' and " +
                 "addr_line2 = '%2' and " +
@@ -524,6 +546,7 @@ public class DBLiason {
         // Add a customer with only an email, password, lastname, and firstname
         // Return the ID of the newly-created customer
 
+        Statement statement = connection.createStatement();
         int id = currentMaxCustomerID() + 1;
 
         String cmdFmt = "insert into customer values(%1, '%2', '%3', '%4', '%5', null, null, null, null, null, null);";
@@ -536,12 +559,12 @@ public class DBLiason {
     private static int addCustomerByAddr( String addr_line1, String addr_line2,String city, String province, String zipcode, String country ) throws SQLException {
         // Add a null customer with only an address (no email, password, lastname, or firstname)
         // Return the ID of the newly-created customer
-
         int id = currentMaxCustomerID() + 1;
 
         String cmdFmt = "insert into customer values (%1, null, null, null, null, '%2', '%3', '%4', '%5', '%6', '%7');";
         String cmd = formatCommand( cmdFmt, Integer.toString(id), addr_line1, addr_line2, city, province, zipcode, country );
 
+        Statement statement = connection.createStatement();
         statement.execute( cmd );
         return id;
     }
@@ -590,6 +613,7 @@ public class DBLiason {
 
         String cmd = formatCommand( cmdFmt, addr_line1, addr_line2, city, province, zipcode, country, Integer.toString(emailID) );
 
+        Statement statement = connection.createStatement();
         statement.execute( cmd );
 
 
@@ -617,6 +641,7 @@ public class DBLiason {
         String cmdFmt = "insert into CustomerCreditCard values (%1, '%2', '%3', '%4', '%5');";
         String cmd = formatCommand( cmdFmt, Integer.toString(id), card_name, card_num, expiration, cvv);
 
+        Statement statement = connection.createStatement();
         statement.execute( cmd );
         return true;
     }
@@ -630,10 +655,12 @@ public class DBLiason {
 
         String cmdFmt = "delete from CustomerBankAccount where customer_id = %1;";
         String cmd = formatCommand( cmdFmt, Integer.toString(id) );
+        Statement statement = connection.createStatement();
         statement.execute( cmd );
 
         cmdFmt = "insert into CustomerBankAccount values( %1, '%2', '%3' );";
         cmd = formatCommand( cmdFmt, Integer.toString(id), acct_num, routing_num );
+        statement = connection.createStatement();
         statement.execute( cmd );
 
         return true;
@@ -649,6 +676,7 @@ public class DBLiason {
         String cmdFmt = "insert into CustomerPhone values( %1, '%2' );";
         String cmd = formatCommand( cmdFmt, Integer.toString(id), phone_num );
 
+        Statement statement = connection.createStatement();
         statement.execute( cmd );
         return true;
     }
@@ -659,6 +687,7 @@ public class DBLiason {
      */
 
     private static int currentMaxPackageID() throws SQLException {
+        Statement statement = connection.createStatement();
         ResultSet maxIdResult = statement.executeQuery( "select max(ID) from package;");
         maxIdResult.first();
         return maxIdResult.getInt("MAX(ID)");
@@ -749,6 +778,7 @@ public class DBLiason {
                 Boolean.toString(receiver_pays),
                 Boolean.toString(already_paid));
 
+        Statement statement = connection.createStatement();
         statement.execute( cmd );
     }
 
@@ -800,6 +830,7 @@ public class DBLiason {
         ArrayList<String> prettified;
 
         try {
+            Statement statement = connection.createStatement();
             ResultSet packages = statement.executeQuery("select * from package");
             prettified = prettifyResultSet(
 
@@ -821,6 +852,7 @@ public class DBLiason {
         ArrayList<String> prettified;
 
         try {
+            Statement statement = connection.createStatement();
             ResultSet packages = statement.executeQuery("select ID, last_name, first_name from customer");
             prettified = prettifyResultSet( "Customer #%(d,ID): %(s,first_name) %(s,last_name)", packages );
             return asLines(prettified);
@@ -836,6 +868,7 @@ public class DBLiason {
         ArrayList<String> prettified;
 
         try {
+            Statement statement = connection.createStatement();
             ResultSet packages = statement.executeQuery("select ID, last_name, first_name, addr_line1, addr_line2, city, province, zipcode, country from customer");
             prettified = prettifyResultSet( "Customer #%(d,ID): %(s,first_name) %(s,last_name) \t >> " +
                     "%(s,addr_line1) (%(s,addr_line2)) | %(s,city), %(s,province) %(s,zipcode): %(s,country)", packages );
@@ -852,6 +885,7 @@ public class DBLiason {
         ArrayList<String> prettified;
 
         try {
+            Statement statement = connection.createStatement();
             ResultSet packages = statement.executeQuery("select email, password from customer");
             prettified = prettifyResultSet( "%(s,email), %(s,password)", packages );
             return asLines(prettified);
@@ -870,6 +904,7 @@ public class DBLiason {
         // This utility, if used at all, will only be accessible to the sysadmin.
         // I don't know if it's a good idea to have even then. We'll see.
         // Also, it should probably return a ResultSet. - Evan (24 Mar 2019)
+        Statement statement = connection.createStatement();
         statement.execute(sql);
     }
 
@@ -880,6 +915,7 @@ public class DBLiason {
         String cmdFmt = "select ID from customer where email = '%1' and password = '%2';";
         String cmd = formatCommand( cmdFmt, email, password );
 
+        Statement statement = connection.createStatement();
         ResultSet rs = statement.executeQuery( cmd );
 
         if( rs.first() ) // If there exists a customer with this email and password, the password is correct
@@ -895,6 +931,7 @@ public class DBLiason {
         String cmdFmt = "select * from CustomerBankAccount where customer_id = %1;";
         String cmd = formatCommand( cmdFmt, Integer.toString(id) );
 
+        Statement statement = connection.createStatement();
         ResultSet rs = statement.executeQuery( cmd );
         if(!rs.first()) return null;
 
@@ -911,6 +948,7 @@ public class DBLiason {
 
         String cmdFmt = "select * from CustomerCreditCard where customer_id = %1;";
         String cmd = formatCommand( cmdFmt, Integer.toString(id) );
+        Statement statement = connection.createStatement();
         ResultSet rs = statement.executeQuery( cmd );
 
         ArrayList<HashMap<String, String>> result = new ArrayList<>();
@@ -931,6 +969,7 @@ public class DBLiason {
 
         String cmdFmt = "select phone_num from CustomerPhone where customer_id = %1;";
         String cmd = formatCommand( cmdFmt, Integer.toString(id) );
+        Statement statement = connection.createStatement();
         ResultSet rs = statement.executeQuery( cmd );
 
         ArrayList<String> result = new ArrayList<>();
@@ -949,6 +988,7 @@ public class DBLiason {
         String cmdFmt = "select addr_line1, addr_line2, city, province, zipcode, country from customer where id = %1;";
         String cmd = formatCommand( cmdFmt, Integer.toString(id) );
 
+        Statement statement = connection.createStatement();
         ResultSet rs = statement.executeQuery( cmd );
         rs.first();
 
@@ -964,6 +1004,7 @@ public class DBLiason {
     /* Specific query utilities */
 
     public static ResultSet getLatePackages() throws SQLException {
+        Statement statement = connection.createStatement();
         return statement.executeQuery("select * from Package where delivery_timestamp is null and expected_delivery < current_timestamp");
     }
 
