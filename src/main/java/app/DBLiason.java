@@ -51,12 +51,14 @@ public class DBLiason {
 
 
     public enum Expediency {
-        OVERNIGHT (1.75),
-        TWODAY    (1.25),
-        REGULAR   (1.00);
+        OVERNIGHT ("overnight",1.75),
+        TWODAY    ("two-day",1.25),
+        REGULAR   ("regular", 1.00);
 
+        String name;
         double priceMultiplier;
-        Expediency( double _priceMultiplier ) {
+        Expediency( String _name, double _priceMultiplier ) {
+            this.name = _name;
             this.priceMultiplier = _priceMultiplier;
         }
     }
@@ -64,15 +66,17 @@ public class DBLiason {
     public enum PackageType {
         // In the future, the package types could be expanded to e.g. "10in x 10in" or "length + width < 100in"
         // Note that envelopes are not letters but package-sized envelopes
-        ENVELOPE_SMALL ( 500,  5000),
-        ENVELOPE_LARGE ( 800, 10000),
-        PACKAGE_SMALL  (1500, 20000),
-        PACAKGE_MEDIUM (2000, 40000),
-        PACKAGE_LARGE  (3000,120000);
+        ENVELOPE_SMALL ("envelope - small", 500,  5000),
+        ENVELOPE_LARGE ("envelope - large", 800, 10000),
+        PACKAGE_SMALL  ("package - small", 1500, 20000),
+        PACAKGE_MEDIUM ("package - medium",2000, 40000),
+        PACKAGE_LARGE  ("package - large", 3000,120000);
 
+        String name;
         int basePriceCents;
         int maxWeightGrams;
-        PackageType( int _basePriceCents, int _maxWeightGrams ) {
+        PackageType( String _name, int _basePriceCents, int _maxWeightGrams ) {
+            this.name = _name;
             this.basePriceCents = _basePriceCents;
             this.maxWeightGrams = _maxWeightGrams;
         }
@@ -146,8 +150,6 @@ public class DBLiason {
                 "last_name varchar(255)," +
                 "first_name varchar(255)," +
 
-                "bank_account varchar(255)," + // If this exists, then it is charged with monthly bills
-
                 "addr_line1 varchar(1024)," + // You wouldn't think addresses could get this long, but they can.
                 "addr_line2 varchar(1024)," +
                 "city varchar(255)," +
@@ -163,11 +165,10 @@ public class DBLiason {
         // CSV Order: ID, lastname, firstname, email, addr_line1, city, province, zip_code, country
         // The CSV does not contain some columns, so default values should be used:
         //    password:     "password"
-        //    bank_account: null
         //    addr_line2:   null
 
         populateTableFromCSV("customer", "Phase 2/customerLastFirst.csv",
-                "%1, '%4', 'password', '%2', '%3', null, '%5', null, '%6', '%7', '%8', '%9'");
+                "%1, '%4', 'password', '%2', '%3', '%5', null, '%6', '%7', '%8', '%9'");
     }
     private static void setupTripTable() throws SQLException {
         statement.execute("drop table trip if exists;");
@@ -230,9 +231,10 @@ public class DBLiason {
         statement.execute("drop table customerHasBankAccount if exists");
         statement.execute("create table customerHasBankAccount(" +
                 "customer_id int, " +
-                "acct_number varchar(255)," +
+                "acct_num varchar(255)," +
+                "routing_num varchar(255)," +
 
-                "primary key (customer_id, acct_number), " +
+                "primary key (customer_id, acct_num), " +
                 "foreign key (customer_id) references customer(ID), " +
                 ");");
     }
@@ -240,7 +242,11 @@ public class DBLiason {
         statement.execute("drop table customerHasCreditCard if exists");
         statement.execute("create table customerHasCreditCard(" +
                 "customer_id int, " +
+
+                "card_name varchar(255)," +
                 "card_num varchar(255)," +
+                "card_expiration varchar(7)," +
+                "card_cvv varchar(4)," +
 
                 "primary key (customer_id, card_num)," +
                 "foreign key (customer_id) references customer(ID), " +
@@ -441,26 +447,39 @@ public class DBLiason {
         return result.getInt("ID");
     }
 
-    private static void addCustomerByInfo( String lastName, String firstName, String email, String password ) throws SQLException {
+    private static int addCustomerByInfo( String lastName, String firstName, String email, String password ) throws SQLException {
         // Add a customer with only an email, password, lastname, and firstname
+        // Return the ID of the newly-created customer
 
-        int maxID = currentMaxCustomerID();
+        int id = currentMaxCustomerID() + 1;
 
-        String cmdFmt = "insert into customer values(%1, '%2', '%3', '%4', '%5', null, null, null, null, null, null, null);";
-        String insertCmd = formatCommand( cmdFmt, Integer.toString(maxID+1), email, password, lastName, firstName);
+        String cmdFmt = "insert into customer values(%1, '%2', '%3', '%4', '%5', null, null, null, null, null, null);";
+        String insertCmd = formatCommand( cmdFmt, Integer.toString(id), email, password, lastName, firstName);
 
         statement.execute( insertCmd );
+        return id;
     }
 
-    private static void addCustomerByAddr( String addr_line1, String addr_line2,String city, String province, String zipcode, String country ) throws SQLException {
+    private static int addCustomerByAddr( String addr_line1, String addr_line2,String city, String province, String zipcode, String country ) throws SQLException {
         // Add a null customer with only an address (no email, password, lastname, or firstname)
+        // Return the ID of the newly-created customer
 
-        int maxID = currentMaxCustomerID();
+        int id = currentMaxCustomerID() + 1;
 
-        String cmdFmt = "insert into customer values (%1, null, null, null, null, null, '%2', '%3', '%4', '%5', '%6', '%7');";
-        String cmd = formatCommand( cmdFmt, Integer.toString(maxID+1), addr_line1, addr_line2, city, province, zipcode, country );
+        String cmdFmt = "insert into customer values (%1, null, null, null, null, '%2', '%3', '%4', '%5', '%6', '%7');";
+        String cmd = formatCommand( cmdFmt, Integer.toString(id), addr_line1, addr_line2, city, province, zipcode, country );
 
         statement.execute( cmd );
+        return id;
+    }
+
+    private static int ensureAddressExists( String addr_line1, String addr_line2, String city, String province, String zipcode, String country ) throws SQLException {
+        // Make sure there is a customer with the given address (create a null-customer if necessary)
+        // Return the ID of the (possibly-newly-created) customer
+
+        int id = getCustomerByAddr( addr_line1, addr_line2, city, province, zipcode, country );
+        if(id >= 0) return id;
+        return addCustomerByAddr( addr_line1, addr_line2, city, province, zipcode, country );
     }
 
     private static boolean linkAddress( String email, String addr_line1, String addr_line2, String city, String province, String zipcode, String country ) throws SQLException {
@@ -515,31 +534,35 @@ public class DBLiason {
         return true;
     }
 
-    private static boolean linkCreditCard( String email, String card_num ) throws SQLException {
+    private static boolean linkCreditCard( String email, String card_name, String card_num, String expiration, String cvv ) throws SQLException {
         // Link a given customer account to a given credit card number (this DOES NOT delete previously-linked cards)
         // Returns true on success, false on failure
 
         int id = getCustomerByEmail( email );
         if(id < 0) return false;
 
-        String cmdFmt = "insert into customerHasCreditCard values (%1, '%2');";
-        String cmd = formatCommand( cmdFmt, Integer.toString(id), card_num );
+        String cmdFmt = "insert into customerHasCreditCard values (%1, '%2', '%3', '%4', '%5');";
+        String cmd = formatCommand( cmdFmt, Integer.toString(id), card_name, card_num, expiration, cvv);
 
         statement.execute( cmd );
         return true;
     }
 
-    private static boolean linkBankAccount( String email, String acct_num ) throws SQLException {
+    private static boolean linkBankAccount( String email, String acct_num, String routing_num ) throws SQLException {
         // Link a given customer account to a bank account number (this DOES delete any previously-linked accounts)
         // Returns true on success, false on failure
 
         int id = getCustomerByEmail( email );
         if(id < 0) return false;
 
-        String cmdFmt = "update customer set bank_account = '%2' where id = %1";
-        String cmd = formatCommand( cmdFmt, Integer.toString(id), acct_num );
-
+        String cmdFmt = "delete from customerHasBankAccount where customer_id = %1;";
+        String cmd = formatCommand( cmdFmt, Integer.toString(id) );
         statement.execute( cmd );
+
+        cmdFmt = "insert into customerHasBankAccount values( %1, '%2', '%3' );";
+        cmd = formatCommand( cmdFmt, Integer.toString(id), acct_num, routing_num );
+        statement.execute( cmd );
+
         return true;
     }
 
@@ -581,20 +604,94 @@ public class DBLiason {
         return (int) priceCents; // Round down to nearest cent
     }
 
-    private static boolean scanPackage(int origin_customer_id, int dest_customer_id, Expediency expediency,
-                                   PackageType type, int weight_in_grams,
-                                   boolean receiver_pays, boolean already_paid ) throws SQLException {
-
-        // UNDER CONSTRUCTION
+    private static void createPackage(int origin_customer_id, int dest_customer_id,
+                                         long ship_timestamp, Expediency expediency,
+                                         PackageType type, int weight_in_grams,
+                                         boolean receiver_pays, boolean already_paid ) throws SQLException {
 
         /* There are a lot of fields in the package table. Here's how each of them is filled in:
          *
          *      ID:                     next available id
          *
-         *      origin_customer_id:     given on package label
-         *      dest_customer_id:       given on package label
+         *      origin_customer_id:     passed as argument
+         *      dest_customer_id:       passed as argument
          *
-         *      ship_timestamp:         current time (when this method is called)
+         *      ship_timestamp:         passed as argument
+         *      delivery_timestamp:     null (gets set when package is delivered)
+         *      expected_delivery:      computed from ship_timestamp and expediency*
+         *
+         *      type:                   passed as argument
+         *      weight:                 passed as argument
+         *
+         *      price:                  computed from type, weight, and expediency*
+         *      receiver_pays:          passed as argument
+         *      paid_flag:              passed as argument**
+         *      signature:              null (gets set when the package is signed for)
+         *
+         *
+         *      * "expediency" is passed as an argument, but is not present in the package table
+         *      ** The paid_flag will be true if the customer pays with a credit card and false if they bill monthly to an account
+         */
+
+        int id = currentMaxPackageID() + 1;
+
+        int days = expediency == Expediency.OVERNIGHT ? 1 :
+                   expediency == Expediency.TWODAY ? 2 :
+                   computeDaysBetween( origin_customer_id, dest_customer_id );
+
+        int price = computePrice( type, weight_in_grams, expediency );
+
+        String cmdFmt = "insert into package values(" +
+
+                "%1, " +
+
+                "%2, " +
+                "%3, " +
+
+                "dateadd(second, %4, '1970-01-01'), " + // convert unix time to regular time
+                "null, " +
+                "dateadd(day, %5, dateadd(second, %4, '1970-01-01'))," + // convert unix time to regular time and then add shipping time
+
+                "%6, " +
+                "%7, " +
+
+                "%8, " +
+                "%9, " +
+                "%10, " +
+                "null);";
+
+        String cmd = formatCommand( cmdFmt,
+
+                Integer.toString(id),
+
+                Integer.toString(origin_customer_id),
+                Integer.toString(dest_customer_id),
+
+                Long.toString(ship_timestamp), Integer.toString(days),
+
+                type.name,
+                Double.toString(weight_in_grams / 1000.0 ),
+
+                Double.toString( price / 100.0 ),
+                Boolean.toString(receiver_pays),
+                Boolean.toString(already_paid));
+
+        statement.execute( cmd );
+    }
+
+    private static void scanPackage(
+            String o_addr_line1, String o_addr_line2, String o_city, String o_province, String o_zipcode, String o_country,
+            String d_addr_line1, String d_addr_line2, String d_city, String d_province, String d_zipcode, String d_country,
+            Expediency expediency, PackageType type, int weight_in_grams, boolean receiver_pays, boolean already_paid
+    ) throws SQLException {
+        /* There are a lot of fields in the package table. Here's how each of them is filled in:
+         *
+         *      ID:                     next available id
+         *
+         *      origin_customer_id:     derived from origin address***
+         *      dest_customer_id:       derived from destination address***
+         *
+         *      ship_timestamp:         current time
          *      delivery_timestamp:     null (gets set when package is delivered)
          *      expected_delivery:      derived from ship_timestamp and expediency*
          *
@@ -609,16 +706,16 @@ public class DBLiason {
          *
          *      * "expediency" is given on the package label, but is not present in the package table
          *      ** The paid_flag will be true if the customer pays with a credit card and false if they bill monthly to an account
+         *      *** The elements of the origin and destination addresses are on the label, but not present in the package table
          */
 
-        int id = currentMaxPackageID() + 1;
+        int origin_customer_id = ensureAddressExists(o_addr_line1, o_addr_line2, o_city, o_province, o_zipcode, o_country);
+        int dest_customer_id = ensureAddressExists(d_addr_line1, d_addr_line2, d_city, d_province, d_zipcode, d_country);
 
-        int days = expediency == Expediency.OVERNIGHT ? 1 :
-                   expediency == Expediency.TWODAY ? 2 :
-                   computeDaysBetween( origin_customer_id, dest_customer_id );
-
-        //int price = computePrice( type, weight_in_grams, expediency );
-        return false; // Temporary
+        createPackage(origin_customer_id, dest_customer_id,
+                System.currentTimeMillis()/1000, expediency,
+                type, weight_in_grams,
+                receiver_pays, already_paid);
     }
 
 
@@ -713,30 +810,38 @@ public class DBLiason {
         return false;
     }
 
-    public static String getBankAccountForCustomer( String email ) throws SQLException {
+    public static HashMap<String, String> getBankAccountForCustomer( String email ) throws SQLException {
         int id = getCustomerByEmail( email );
         if(id < 0) return null;
 
-        String cmdFmt = "select bank_account from customer where id = %1;";
+        String cmdFmt = "select * from customerHasBankAccount where customer_id = %1;";
         String cmd = formatCommand( cmdFmt, Integer.toString(id) );
 
         ResultSet rs = statement.executeQuery( cmd );
         rs.first();
-        return rs.getString("bank_account");
+
+        HashMap<String, String> result = new HashMap<>();
+        for(String attribute : new String[] {"acct_num", "routing_num"})
+            result.put(attribute, rs.getString(attribute));
+
+        return result;
     }
 
-    public static ArrayList<String> getCreditCardsForCustomer( String email ) throws SQLException {
+    public static ArrayList<HashMap<String, String>> getCreditCardsForCustomer( String email ) throws SQLException {
         int id = getCustomerByEmail( email );
         if(id < 0) return null;
 
-        String cmdFmt = "select card_num from customerHasCreditCard where customer_id = %1;";
+        String cmdFmt = "select * from customerHasCreditCard where customer_id = %1;";
         String cmd = formatCommand( cmdFmt, Integer.toString(id) );
         ResultSet rs = statement.executeQuery( cmd );
 
-        ArrayList<String> result = new ArrayList<>();
+        ArrayList<HashMap<String, String>> result = new ArrayList<>();
 
         while (rs.next()) {
-            result.add(rs.getString("card_num"));
+            HashMap<String, String> thisCard = new HashMap<>();
+            for(String attribute : new String[] {"card_num", "card_name", "card_expiration", "card_cvv"})
+                thisCard.put(attribute, rs.getString(attribute));
+            result.add(thisCard);
         }
 
         return result;
@@ -829,35 +934,49 @@ public class DBLiason {
             String evan = "err2315@rit.edu";
             String des = "desiree310@verizon.net";
 
-            linkCreditCard(des, "4");
-            linkCreditCard(evan, "1");
-            linkCreditCard(des, "2");
 
-            linkBankAccount( evan, "99" );
-            linkBankAccount( des, "98" );
-            linkBankAccount( evan, "97" );
+            linkCreditCard( des, "Des Dessy", "4", "01/22", "123" );
+            linkCreditCard( evan, "Evan R V Rysdam", "1", "11/22", "456");
+            linkCreditCard( des, "Des Dessy", "2", "02/69", "122");
+
+            linkBankAccount( evan, "99", "99.1" );
+            linkBankAccount( des, "98", "98.1" );
+            linkBankAccount( evan, "97", "97.1" );
 
             linkPhoneNumber( evan, "603-721-9458");
             linkPhoneNumber( des, "111-111-1111");
             linkPhoneNumber( des, "222-222-2222");
 
-            ArrayList<String> evanCards = getCreditCardsForCustomer( evan );
-            ArrayList<String> desCards = getCreditCardsForCustomer( des );
+
+            ArrayList<HashMap<String, String>> evanCards = getCreditCardsForCustomer( evan );
+            ArrayList<HashMap<String, String>> desCards = getCreditCardsForCustomer( des );
 
             ArrayList<String> evanPhone = getPhoneNumbersForCustomer( evan );
             ArrayList<String> desPhone = getPhoneNumbersForCustomer( des );
 
-            System.out.println();
-            System.out.print("Evan's cards:");
-            for(String s : evanCards) System.out.print(" " + s);
+            HashMap<String, String> evanAcct = getBankAccountForCustomer( evan );
+            HashMap<String, String> desAcct = getBankAccountForCustomer( des );
 
+
+            System.out.println();
+            System.out.print("\nEvan's cards:");
+            for(HashMap<String, String> h : evanCards)
+                System.out.print( String.format(" (%s, %s, %s, %s)",
+                        h.get("card_name"), h.get("card_num"),
+                        h.get("card_expiration"), h.get("card_cvv")) );
+
+
+            System.out.println();
             System.out.print("\nDes's cards:");
-            for(String s : desCards) System.out.print(" " + s);
-            System.out.println();
+            for(HashMap<String, String> h : desCards)
+                System.out.print( String.format(" (%s, %s, %s, %s)",
+                        h.get("card_name"), h.get("card_num"),
+                        h.get("card_expiration"), h.get("card_cvv")) );
 
             System.out.println();
-            System.out.println("Evan's bank account: " + getBankAccountForCustomer(evan));
-            System.out.println("Des's bank account: " + getBankAccountForCustomer(des));
+            System.out.println();
+            System.out.println( String.format("Evan's bank account: %s, %s", evanAcct.get("acct_num"), evanAcct.get("routing_num")) );
+            System.out.println( String.format("Des's bank account: %s, %s", desAcct.get("acct_num"), desAcct.get("routing_num")) );
 
             System.out.println();
             System.out.print("Evan's phone numbers:");
