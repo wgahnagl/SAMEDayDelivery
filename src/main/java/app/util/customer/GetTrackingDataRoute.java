@@ -1,14 +1,10 @@
-package app.ui;
+package app.util.customer;
 
 import spark.Request;
 import spark.Response;
 import spark.Route;
-import spark.TemplateEngine;
 
-public class GetAddBankAccountRoute implements Route {
-    public GetAddBankAccountRoute(TemplateEngine templateEngine) {
-    }
-
+public class GetTrackingDataRoute implements Route {
     @Override
     public Object handle(Request request, Response response) throws Exception {
         return null;
