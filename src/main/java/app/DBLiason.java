@@ -263,7 +263,7 @@ public class DBLiason {
                 "info varchar(255), " +
                 ");");
 
-        populateTableFromCSV("specialInfo", "TestData/specialInfo.csv", "%1, '%2'");
+        populateTableFromCSV("SpecialInfo", "TestData/specialInfo.csv", "%1, '%2'");
     }
 
     private static void setupCustomerPhoneTable() throws SQLException {
@@ -276,7 +276,8 @@ public class DBLiason {
                 "foreign key (customer_id) references Customer(ID), " +
                 ");");
 
-        populateTableFromCSV("customerPhone", "TestData/customerPhone.csv", "%1, '%2'");
+
+        populateTableFromCSV("CustomerPhone", "TestData/customerPhone.csv", "%1, '%2'");
     }
 
     private static void setupCustomerBankAccountTable() throws SQLException {
@@ -290,12 +291,13 @@ public class DBLiason {
                 "foreign key (customer_id) references customer(ID), " +
                 ");");
 
-        populateTableFromCSV("customerBankAccount", "TestData/customerBankAccount.csv", "%1, '%2', '%3'");
+
+        populateTableFromCSV("CustomerBankAccount", "TestData/customerBankAccount.csv", "%1, '%2', '%3'");
     }
 
     private static void setupCustomerCreditCardTable() throws SQLException {
-        statement.execute("drop table customerCreditCard if exists");
-        statement.execute("create table customerCreditCard(" +
+        statement.execute("drop table CustomerCreditCard if exists");
+        statement.execute("create table CustomerCreditCard(" +
                 "customer_id int, " +
 
                 "card_name varchar(255)," +
@@ -307,7 +309,8 @@ public class DBLiason {
                 "foreign key (customer_id) references Customer(ID), " +
                 ");");
 
-        populateTableFromCSV("customerCreditCard", "TestData/customerCreditCard.csv", "%1, '%2', '%3', '%4', '%5'");
+
+        populateTableFromCSV("CustomerCreditCard", "TestData/customerCreditCard.csv", "%1, '%2', '%3', '%4', '%5'");
     }
     private static void setupPackageSpecialInfoTable() throws SQLException {
         statement.execute("drop table PackageSpecialInfo if exists");
@@ -320,7 +323,8 @@ public class DBLiason {
                 "foreign key (special_info_id) references SpecialInfo(ID), " +
                 ");");
 
-        populateTableFromCSV("packageSpecialInfo", "TestData/packageSpecialInfo.csv", "%1,'%2'");
+
+        populateTableFromCSV("PackageSpecialInfo", "TestData/packageSpecialInfo.csv", "%1,'%2'");
     }
 
 
@@ -604,7 +608,7 @@ public class DBLiason {
         int id = getCustomerByEmail( email );
         if(id < 0) return false;
 
-        String cmdFmt = "insert into customerCreditCard values (%1, '%2', '%3', '%4', '%5');";
+        String cmdFmt = "insert into CustomerCreditCard values (%1, '%2', '%3', '%4', '%5');";
         String cmd = formatCommand( cmdFmt, Integer.toString(id), card_name, card_num, expiration, cvv);
 
         statement.execute( cmd );
@@ -618,11 +622,11 @@ public class DBLiason {
         int id = getCustomerByEmail( email );
         if(id < 0) return false;
 
-        String cmdFmt = "delete from customerBankAccount where customer_id = %1;";
+        String cmdFmt = "delete from CustomerBankAccount where customer_id = %1;";
         String cmd = formatCommand( cmdFmt, Integer.toString(id) );
         statement.execute( cmd );
 
-        cmdFmt = "insert into customerBankAccount values( %1, '%2', '%3' );";
+        cmdFmt = "insert into CustomerBankAccount values( %1, '%2', '%3' );";
         cmd = formatCommand( cmdFmt, Integer.toString(id), acct_num, routing_num );
         statement.execute( cmd );
 
@@ -636,7 +640,8 @@ public class DBLiason {
         int id = getCustomerByEmail( email );
         if(id < 0) return false;
 
-        String cmdFmt = "insert into customerPhone values( %1, '%2' );";
+
+        String cmdFmt = "insert into CustomerPhone values( %1, '%2' );";
         String cmd = formatCommand( cmdFmt, Integer.toString(id), phone_num );
 
         statement.execute( cmd );
@@ -878,7 +883,7 @@ public class DBLiason {
         int id = getCustomerByEmail( email );
         if(id < 0) return null;
 
-        String cmdFmt = "select * from customerBankAccount where customer_id = %1;";
+        String cmdFmt = "select * from CustomerBankAccount where customer_id = %1;";
         String cmd = formatCommand( cmdFmt, Integer.toString(id) );
 
         ResultSet rs = statement.executeQuery( cmd );
@@ -895,7 +900,7 @@ public class DBLiason {
         int id = getCustomerByEmail( email );
         if(id < 0) return null;
 
-        String cmdFmt = "select * from customerCreditCard where customer_id = %1;";
+        String cmdFmt = "select * from CustomerCreditCard where customer_id = %1;";
         String cmd = formatCommand( cmdFmt, Integer.toString(id) );
         ResultSet rs = statement.executeQuery( cmd );
 
@@ -915,7 +920,7 @@ public class DBLiason {
         int id = getCustomerByEmail( email );
         if(id < 0) return null;
 
-        String cmdFmt = "select phone_num from customerPhone where customer_id = %1;";
+        String cmdFmt = "select phone_num from CustomerPhone where customer_id = %1;";
         String cmd = formatCommand( cmdFmt, Integer.toString(id) );
         ResultSet rs = statement.executeQuery( cmd );
 
