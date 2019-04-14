@@ -1389,3 +1389,14 @@ insert into customerHasCreditCard values (5, 'Des Dessy', '4', '01/22', '123'); 
 2019-04-14 12:43:16 jdbc[3]: exception
 org.h2.jdbc.JdbcSQLException: Table "CUSTOMERHASCREDITCARD" not found; SQL statement:
 select * from customerHasCreditCard where customer_id = 401; [42102-197]
+2019-04-14 13:02:23 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLException: Column " dest_customer_id" not found [42122-197]
+	at org.h2.message.DbException.getJdbcSQLException(DbException.java:357)
+	at org.h2.message.DbException.get(DbException.java:179)
+	at org.h2.message.DbException.get(DbException.java:155)
+	at org.h2.jdbc.JdbcResultSet.getColumnIndex(JdbcResultSet.java:3148)
+	at org.h2.jdbc.JdbcResultSet.get(JdbcResultSet.java:3247)
+	at org.h2.jdbc.JdbcResultSet.getInt(JdbcResultSet.java:346)
+	at app.DBLiason.prettifyResultSet(DBLiason.java:417)
+	at app.DBLiason.prettyPackageList(DBLiason.java:799)
+	at app.DBLiason.main(DBLiason.java:996)

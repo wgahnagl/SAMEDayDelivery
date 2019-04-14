@@ -795,8 +795,14 @@ public class DBLiason {
         ArrayList<String> prettified;
 
         try {
-            ResultSet packages = statement.executeQuery("select ID, ship_timestamp from package");
-            prettified = prettifyResultSet( "PackageID #%(d,ID) (shipped at %(timestamp,ship_timestamp))", packages );
+            ResultSet packages = statement.executeQuery("select * from package");
+            prettified = prettifyResultSet(
+
+                    "PackageID #%(d,ID) from customer #%(d,origin_customer_id) to #%(d,dest_customer_id)\n" +
+                            "    Shipped at: %(timestamp,ship_timestamp)\n" +
+                            "    Due at:     %(timestamp,expected_delivery)",
+
+                    packages );
             return asLines(prettified);
         } catch(SQLException sqle) {
             sqle.printStackTrace();
@@ -885,7 +891,7 @@ public class DBLiason {
         String cmd = formatCommand( cmdFmt, Integer.toString(id) );
 
         ResultSet rs = statement.executeQuery( cmd );
-        rs.first();
+        if(!rs.first()) return null;
 
         HashMap<String, String> result = new HashMap<>();
         for(String attribute : new String[] {"acct_num", "routing_num"})
