@@ -821,6 +821,9 @@ public class DBLiason {
                 receiver_pays, already_paid);
     }
 
+    public static boolean createLabel(String email, String address1, String address2, String city, String state, String zip, String country, String expediency, String packageType, String weight){
+        return true;
+    }
 
     /* Methods to get pretty-prints of various tables and subset of tables */
 

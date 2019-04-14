@@ -15,4 +15,23 @@ public class Util {
         }
         return vm;
     }
+
+    public static HashMap<String, String> getAddressFromRequest (Request request){
+        HashMap<String, String> elements  = new HashMap<>();
+        elements.put("address", request.queryParams("address"));
+        elements.put("city",request.queryParams("city"));
+        elements.put("country", request.queryParams("country"));
+        elements.put("state", request.queryParams("state"));
+        elements.put("zip", request.queryParams("zip"));
+        elements.put("address2" , request.queryParams("address2"));
+        return elements;
+    }
+
+    public static HashMap<String, String> getLabelDataFromRequest(Request request){
+        HashMap<String, String> elements  = new HashMap<>();
+        elements.put("expediency", request.queryParams("expediency"));
+        elements.put("packageType", request.queryParams("packageType"));
+        elements.put("weight", request.queryParams("weight"));
+        return elements;
+    }
 }

@@ -62,35 +62,18 @@
 
 <div class="jumbotron">
     <div class="container">
-        <h1 class="display-4">Credit Card</h1>
+        <h1 class="display-4">Credit Cards</h1>
         <div id="displayCreditCard" style="display: none">
-            <p class="lead">
-            <div class="row">
-                <div class="col-sm-6">
-                    address
-                </div>
-                <div class="col-sm-6">
-                    addd
-                </div>
-            </div>
-            <div class="row">
-                <div class="col-sm-6">
-                    dd
-                </div>
-                <div class="col-sm-6">
-                    addd
-                </div>
-            </div>
+            <p class="lead" id="cardsHolder">
+
             </p>
         </div>
         <div id="addCreditCard">
             <p class="lead">
-            <p class="lead">
                 No credit cards found. You'll need to add one to send packages.
             </p>
-            <a class="btn btn-primary btn-lg btn-block" id="addCreditCard" href="/add_credit_card">Add Credit Card</a>
-            </p>
         </div>
+        <a class="btn btn-primary btn-lg btn-block" id="addCreditCard" href="/add_credit_card">Add Credit Card</a>
 
     </div>
 </div>
@@ -102,18 +85,12 @@
             <p class="lead">
             <div class="row">
                 <div class="col-sm-6">
-                    bank
+                    <label for="bankRoutingNum">Routing Number</label>
+                    <input type="text" class="form-control" id="bankRoutingNum" readonly>
                 </div>
                 <div class="col-sm-6">
-                    bank
-                </div>
-            </div>
-            <div class="row">
-                <div class="col-sm-6">
-                    bank
-                </div>
-                <div class="col-sm-6">
-                    bank
+                    <label for="bankAccountNumber">Account Number</label>
+                    <input type="text" class="form-control" id="bankAccountNumber" readonly>
                 </div>
             </div>
             </p>

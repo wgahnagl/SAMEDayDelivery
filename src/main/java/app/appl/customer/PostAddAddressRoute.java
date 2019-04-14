@@ -2,25 +2,28 @@ package app.appl.customer;
 
 import app.DBLiason;
 import app.model.User;
+import app.util.Util;
 import spark.Request;
 import spark.Response;
 import spark.Route;
+
+import java.util.HashMap;
 
 public class PostAddAddressRoute implements Route {
     @Override
     public Object handle(Request request, Response response) throws Exception {
         User user = request.session().attribute("currentUser");
-        final String address = request.queryParams("address");
-        final String city = request.queryParams("city");
-        final String country = request.queryParams("country");
-        final String state = request.queryParams("state");
-        final String zip = request.queryParams("zip");
-        final String address2 = request.queryParams("address2");
-
-        if(DBLiason.linkAddress(user.getEmail(), address, address2, city, state, zip, country)){
+        HashMap<String, String> addressData = Util.getAddressFromRequest(request);
+        if (DBLiason.linkAddress(user.getEmail(),
+                addressData.get("address"),
+                addressData.get("address2"),
+                addressData.get("city"),
+                addressData.get("state"),
+                addressData.get("zip"),
+                addressData.get("country"))) {
             response.redirect("/account");
             return null;
-        }else{
+        } else {
             request.session().attribute("addressError", "Address add failed");
             response.redirect("/add_address");
             return null;
