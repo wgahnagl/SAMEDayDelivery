@@ -313,7 +313,6 @@ public class DBLiason {
     }
     private static void setupCustomerCreditCardTable() throws SQLException {
         Statement statement = connection.createStatement();
-
         statement.execute("drop table CustomerCreditCard if exists");
         statement.execute("create table CustomerCreditCard(" +
                 "customer_id int, " +
@@ -865,7 +864,24 @@ public class DBLiason {
                 receiver_pays, already_paid);
     }
 
-    public static boolean createLabel(String email, String address1, String address2, String city, String state, String zip, String country, String expediency, String packageType, String weight){
+    //TODO: this isnt good
+    public static boolean createLabel(String email,
+                                      String address1,
+                                      String address2,
+                                      String city,
+                                      String state,
+                                      String zip,
+                                      String country,
+                                      String expediency,
+                                      String packageType,
+                                      String weight,
+                                      String receiverPays,
+                                      String alreadyPaid,
+                                      String autoWithdraw,
+                                      String cc_name,
+                                      String cc_number,
+                                      String cc_exiration,
+                                      String cc_cvv){
         return true;
     }
 

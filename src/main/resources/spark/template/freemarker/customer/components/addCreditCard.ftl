@@ -1,5 +1,4 @@
 
-<h4 class="mb-3">Payment</h4>
 <div class="row">
     <div class="col-md-6 mb-3">
         <label for="cc-name">Name on card</label>

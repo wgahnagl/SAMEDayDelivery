@@ -24,7 +24,15 @@ public class PostCreateLabel implements Route {
                 addressData.get("country"),
                 labelData.get("expediency"),
                 labelData.get("packageType"),
-                labelData.get("weight"))){
+                labelData.get("weight"),
+                labelData.get("receiverPays"),
+                labelData.get("alreadyPaid"),
+                labelData.get("autoWithdraw"),
+                labelData.get("cc-name"),
+                labelData.get("cc-number"),
+                labelData.get("cc-expiration"),
+                labelData.get("cc-cvv")
+                )){
             response.redirect("/account");
             return null;
         }else{

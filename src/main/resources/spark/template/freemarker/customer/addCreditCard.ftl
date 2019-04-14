@@ -12,6 +12,8 @@
                             </div>
                         </#if>
                         <form class="needs-validation" novalidate="">
+                            <h4 class="mb-3">Payment</h4>
+
                             <#include "components/addCreditCard.ftl">
                             <button class="btn btn-primary btn-lg btn-block" id="addAddressSubmit" type="submit" >Submit</button>
                         </form>

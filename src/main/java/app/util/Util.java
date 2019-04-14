@@ -32,6 +32,13 @@ public class Util {
         elements.put("expediency", request.queryParams("expediency"));
         elements.put("packageType", request.queryParams("packageType"));
         elements.put("weight", request.queryParams("weight"));
+        elements.put("autoWithdraw", request.queryParams("autoWithdraw"));
+        elements.put("recieverPays", request.queryParams("recieverPays"));
+        elements.put("cc-name", request.queryParams("cc-name"));
+        elements.put("cc-number", request.queryParams("cc-number"));
+        elements.put("cc-expiration", request.queryParams("cc-expiration"));
+        elements.put("cc-cvv", request.queryParams("cc-cvv"));
+
         return elements;
     }
 }
