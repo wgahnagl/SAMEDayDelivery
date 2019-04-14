@@ -825,6 +825,44 @@ public class DBLiason {
         statement.execute( cmd );
     }
 
+    public static ArrayList<HashMap<String, String>> getUndeliveredPackagesToCustomer( String email ) throws SQLException {
+        // UNDER CONSTRUCTION
+        int id = getCustomerByEmail( email );
+        if(id < 0) return null;
+
+        String cmdFmt = "select Package.id, Package.ship_timestamp, Package.expected_delivery, Package.delivery_timestamp, " +
+                " Package.type, Package.weight, Package.price, Package.receiver_pays, Package.paid_for, " +
+                " Customer.last_name, Customer.first_name " +
+                " from ( Package join Customer on Package.origin_customer_id = Customer.id ) " +
+                " where Package.dest_customer_id = %1;";
+
+        String cmd = formatCommand( cmdFmt, Integer.toString(id) );
+        Statement statement = connection.createStatement();
+        ResultSet rs = statement.executeQuery( cmd );
+
+        ArrayList<HashMap<String, String>> result = new ArrayList<>();
+
+        while( rs.next() ) {
+            HashMap<String, String> pkg = new HashMap<>();
+            pkg.put("id", Integer.toString(rs.getInt("Package.id")) );
+            pkg.put("ship_timestamp", "" + rs.getTimestamp("Package.ship_timestamp") );
+            pkg.put("expected_delivery", "" + rs.getTimestamp( "Package.expected_delivery") );
+            pkg.put("delivery_timestamp", "" + rs.getTimestamp("Package.delivery_timestamp") );
+            pkg.put("type", rs.getString("Package.type") );
+            pkg.put("weight", Double.toString(rs.getDouble("Package.weight")) );
+            pkg.put("price", Double.toString(rs.getDouble("Package.price")) );
+            pkg.put("receiver_pays", Boolean.toString(rs.getBoolean("Package.receiver_pays")) );
+            pkg.put("paid_flag", Boolean.toString(rs.getBoolean("Package.paid_for")) );
+            pkg.put("sender_first_name", rs.getString("Customer.first_name") );
+            pkg.put("sender_last_name", rs.getString("Customer.last_name") );
+
+            result.add(pkg);
+        }
+
+        return result;
+    }
+
+
     public static void scanPackage(
             String o_addr_line1, String o_addr_line2, String o_city, String o_province, String o_zipcode, String o_country,
             String d_addr_line1, String d_addr_line2, String d_city, String d_province, String d_zipcode, String d_country,
@@ -1054,6 +1092,7 @@ public class DBLiason {
                     Expediency.TWODAY, PackageType.PACKAGE_LARGE, 12010, false, true
             );
 
+            System.out.println();
             System.out.println("PACKAGE TABLE PRINTOUT:");
             System.out.println(prettyPackageList());
         } catch(SQLException sqle) {
@@ -1063,6 +1102,7 @@ public class DBLiason {
 
         // Print out all customers
 
+        System.out.println();
         System.out.println("CUSTOMER TABLE PRINTOUT:");
         System.out.println(prettyCustomerAddressList());
 
@@ -1156,5 +1196,19 @@ public class DBLiason {
             sqle.printStackTrace();
         }
 
+        // Make sure getUndeliveredPackagesToCustomer() works
+
+        try {
+            ArrayList<HashMap<String, String>> desPackages = getUndeliveredPackagesToCustomer( "desiree310@verizon.net" );
+
+            System.out.println();
+            System.out.println("PACKAGES HEADING TO DES:");
+            for(HashMap<String, String> p : desPackages) {
+                System.out.println(p);
+            }
+
+        } catch( SQLException sqle ) {
+            sqle.printStackTrace();
+        }
     }
 }
