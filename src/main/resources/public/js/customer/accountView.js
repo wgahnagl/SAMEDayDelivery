@@ -1,9 +1,9 @@
 $(function(){
     $.get("/get_address_data",
         function(response){
+            console.log(response);
             var address = JSON.parse(response);
-
-            if(address){
+            if(response !== "{}"){
                 $('#displayAddress').show();
                 $('#addAddress').hide();
             }
@@ -26,15 +26,25 @@ $(function(){
 
     $.get("/get_bank_account_data",
         function(response){
-            console.log("does it exist?");
             console.log(response);
         }
     );
 
     $.get("/get_credit_card_data",
         function(response){
-            console.log("does it exist?");
-            console.log(response);
+            var creditCards = JSON.parse(response);
+            if(response !== "[]"){
+                $('#displayAddress').show();
+                $('#addAddress').hide();
+            }
+
+            for(var card in creditCards){
+                var num = card["card_num"];
+                var name = card["card_name"];
+                var expiration = card["card_expiration"];
+                var cvv = card["card_cvv"];
+            }
+
         }
     );
 });

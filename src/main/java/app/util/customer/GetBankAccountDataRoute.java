@@ -13,10 +13,10 @@ public class GetBankAccountDataRoute implements Route {
     @Override
     public Object handle(Request request, Response response) throws Exception {
         User user = request.session().attribute("currentUser");
-//        HashMap<String, String> bankAccount =  DBLiason.getBankAccountForCustomer(user.getEmail());
-        String bankAccount = "bank";
-        request.session().attribute("creditCard", bankAccount);
+        HashMap<String, String> bankAccount = DBLiason.getBankAccountForCustomer(user.getEmail());
+        request.session().attribute("bankAccount", bankAccount);
         response.status(200);
         Gson gson = new Gson();
-        return gson.toJson(bankAccount);    }
+        return gson.toJson(bankAccount);
+    }
 }

@@ -15,14 +15,14 @@ public class PostAddCreditCardRoute implements Route {
         final String expiration = request.queryParams("cc-expiration");
         final String cvv = request.queryParams("cc-cvv");
 
-//        if(DBLiason.addCreditCard(user.getEmail(), address, address2, city, state, zip, country);){
-//            response.redirect("/account");
-//            return null;
-//        }else{
-//            request.session().attribute("addressError", "Address add failed");
-//            response.redirect("/add_address");
-//            return null;
-//        }
-        return null;
+
+        if(DBLiason.linkCreditCard(user.getEmail(), name, number, expiration, cvv)){
+            response.redirect("/account");
+            return null;
+        }else{
+            request.session().attribute("addressError", "Address add failed");
+            response.redirect("/add_address");
+            return null;
+        }
     }
 }

@@ -11,5 +11,6 @@ public class GetPackageDataRoute implements Route {
         String packages = "packages";
         response.status(200);
         Gson gson = new Gson();
-        return gson.toJson(packages);     }
+        return gson.toJson(packages);
+    }
 }

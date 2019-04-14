@@ -597,15 +597,15 @@ public class DBLiason {
         return true;
     }
 
-    private static boolean linkCreditCard( String email, String card_name, String card_num, String expiration, String cvv ) throws SQLException {
+    public static boolean linkCreditCard( String email, String card_name, String card_num, String expiration, String cvv ) throws SQLException {
         // Link a given customer account to a given credit card number (this DOES NOT delete previously-linked cards)
         // Returns true on success, false on failure
 
         int id = getCustomerByEmail( email );
         if(id < 0) return false;
 
-        String cmdFmt = "insert into customerCreditCard values (%1, '%2');";
-        String cmd = formatCommand( cmdFmt, Integer.toString(id), card_num );
+        String cmdFmt = "insert into customerCreditCard values (%1, '%2', '%3', '%4', '%5');";
+        String cmd = formatCommand( cmdFmt, Integer.toString(id), card_name, card_num, expiration, cvv);
 
         statement.execute( cmd );
         return true;
