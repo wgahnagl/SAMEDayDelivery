@@ -26,6 +26,9 @@ $(function(){
 
     $.get("/get_bank_account_data",
         function(response){
+            if(response === "[]"){
+                console.log("no bank data")
+            }
             console.log(response);
         }
     );
@@ -37,6 +40,7 @@ $(function(){
                 $('#displayAddress').show();
                 $('#addAddress').hide();
             }
+            console.log(response);
 
             for(var card in creditCards){
                 var num = card["card_num"];
