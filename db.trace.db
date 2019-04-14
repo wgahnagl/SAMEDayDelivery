@@ -1356,3 +1356,30 @@ select * from customerHasBankAccount where id = 401; [42122-197]
 	at org.h2.jdbc.JdbcStatement.executeQuery(JdbcStatement.java:78)
 	at app.DBLiason.getBankAccountForCustomer(DBLiason.java:822)
 	at app.DBLiason.main(DBLiason.java:959)
+2019-04-14 02:19:09 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLException: Syntax error in SQL statement "INSERT INTO PACKAGE VALUES(1, 59, 243, DATEADD(SECOND, 11825789077, '1970-01-01'), NULL, DATEADD(DAY, 3, DATEADD(SECOND, %[*]4, '1970-01-01')),PACKAGE - LARGE, 95.086, 30.0, FALSE, FALSE, NULL); "; expected "NOT, EXISTS, INTERSECTS, SELECT, FROM, WITH"; SQL statement:
+insert into package values(1, 59, 243, dateadd(second, 11825789077, '1970-01-01'), null, dateadd(day, 3, dateadd(second, %4, '1970-01-01')),package - large, 95.086, 30.0, false, false, null); [42001-197]
+2019-04-14 02:20:59 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLException: Syntax error in SQL statement "INSERT INTO PACKAGE VALUES(1, 59, 243, DATEADD(SECOND, 11825789077, '1970-01-01'), NULL, DATEADD(DAY, 3, DATEADD(SECOND, %[*]4, '1970-01-01')),'package - large', 95.086, 30.0, FALSE, FALSE, NULL); "; expected "NOT, EXISTS, INTERSECTS, SELECT, FROM, WITH"; SQL statement:
+insert into package values(1, 59, 243, dateadd(second, 11825789077, '1970-01-01'), null, dateadd(day, 3, dateadd(second, %4, '1970-01-01')),'package - large', 95.086, 30.0, false, false, null); [42001-197]
+2019-04-14 02:22:18 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLException: Invalid value "11825789077" for parameter "DATEADD count"; SQL statement:
+insert into package values(1, 59, 243, dateadd(second, 11825789077, '1970-01-01'), null, dateadd(day, 3, dateadd(second, 11825789077, '1970-01-01')), 'package - large', 95.086, 30.0, false, 10, null); [90008-197]
+	at org.h2.message.DbException.getJdbcSQLException(DbException.java:357)
+	at org.h2.message.DbException.get(DbException.java:179)
+	at org.h2.message.DbException.getInvalidValueException(DbException.java:240)
+	at org.h2.util.DateTimeFunctions.dateadd(DateTimeFunctions.java:129)
+	at org.h2.expression.Function.getValueWithArgs(Function.java:1434)
+	at org.h2.expression.Function.getValue(Function.java:567)
+	at org.h2.expression.Function.optimize(Function.java:2326)
+	at org.h2.command.dml.Insert.prepare(Insert.java:314)
+	at org.h2.command.Parser.prepareCommand(Parser.java:283)
+	at org.h2.engine.Session.prepareLocal(Session.java:611)
+	at org.h2.engine.Session.prepareCommand(Session.java:549)
+	at org.h2.jdbc.JdbcConnection.prepareCommand(JdbcConnection.java:1247)
+	at org.h2.jdbc.JdbcStatement.executeInternal(JdbcStatement.java:217)
+	at org.h2.jdbc.JdbcStatement.execute(JdbcStatement.java:205)
+	at app.DBLiason.createPackage(DBLiason.java:715)
+	at app.DBLiason.setupPackageTable(DBLiason.java:169)
+	at app.DBLiason.setupDB(DBLiason.java:103)
+	at app.DBLiason.main(DBLiason.java:933)

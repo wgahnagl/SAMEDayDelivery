@@ -138,6 +138,45 @@ public class DBLiason {
                 "foreign key (dest_customer_id) references customer(id)" +
 
                 ");");
+
+        try {
+            BufferedReader bf = new BufferedReader( new FileReader("Testdata/package.csv") );
+            String line;
+
+            while( (line = bf.readLine()) != null ) {
+                String[] values = line.split(",");
+
+                long ship_timestamp = Long.parseLong(values[0]);
+                while(ship_timestamp > 1555223025L) {
+                    ship_timestamp -=   100000000L;
+                }
+
+                int origin_id = Integer.parseInt(values[1]);
+                int dest_id = Integer.parseInt(values[2]);
+
+                Expediency expediency = null;
+                for(Expediency e : new Expediency[] {Expediency.OVERNIGHT, Expediency.TWODAY, Expediency.REGULAR})
+                    if (e.name.equals(values[3]))
+                        expediency = e;
+
+                PackageType type = null;
+                for(PackageType p : new PackageType[] {PackageType.ENVELOPE_SMALL, PackageType.ENVELOPE_LARGE,
+                        PackageType.PACKAGE_SMALL, PackageType.PACAKGE_MEDIUM, PackageType.PACKAGE_LARGE})
+                    if( p.name.equals(values[4]))
+                        type = p;
+
+                int weight_in_grams = (int) (Double.parseDouble(values[5]) * 1000);
+
+                boolean receiver_pays = Boolean.parseBoolean(values[6]);
+                boolean already_paid = Boolean.parseBoolean(values[7]);
+
+                createPackage(origin_id, dest_id, ship_timestamp, expediency, type, weight_in_grams, receiver_pays, already_paid);
+            }
+        } catch( FileNotFoundException fnfe ) {
+            fnfe.printStackTrace();
+        } catch( IOException ioe ) {
+            ioe.printStackTrace();
+        }
     }
     private static void setupCustomerTable() throws SQLException {
         statement.execute("drop table customer if exists;");
@@ -167,7 +206,7 @@ public class DBLiason {
         //    password:     "password"
         //    addr_line2:   null
 
-        populateTableFromCSV("customer", "Phase 2/customerLastFirst.csv",
+        populateTableFromCSV("customer", "TestData/customerLastFirst.csv",
                 "%1, '%4', 'password', '%2', '%3', '%5', null, '%6', '%7', '%8', '%9'");
     }
     private static void setupTripTable() throws SQLException {
@@ -196,6 +235,8 @@ public class DBLiason {
                 "ID int primary key, " +
                 "type varchar(255), " +
                 ");");
+
+        populateTableFromCSV("carrier", "TestData/carrier.csv", "%1,'%2'");
     }
     private static void setupWarehouseTable() throws SQLException {
         statement.execute("drop table warehouse if exists;");
@@ -208,7 +249,7 @@ public class DBLiason {
                 ");");
 
         // ID,addr_line1,city,province,country
-        populateTableFromCSV( "Warehouse", "Phase 2/warehouse.csv", "%1, '%2', '%3', '%4', '%5'" );
+        populateTableFromCSV( "Warehouse", "TestData/warehouse.csv", "%1, '%2', '%3', '%4', '%5'" );
     }
     private static void setupSpecialInfoTable() throws SQLException {
         statement.execute("drop table specialInfo if exists;");
@@ -216,6 +257,8 @@ public class DBLiason {
                 "ID int primary key, " +
                 "info varchar(255), " +
                 ");");
+
+        populateTableFromCSV("specialInfo", "TestData/specialInfo.csv", "%1, '%2'");
     }
     private static void setupCustomerHasPhoneTable() throws SQLException {
         statement.execute("drop table customerHasPhone if exists");
@@ -226,6 +269,8 @@ public class DBLiason {
                 "primary key (customer_id, phone_num), "  +
                 "foreign key (customer_id) references customer(ID), " +
                 ");");
+
+        populateTableFromCSV("customerHasPhone", "TestData/customerPhone.csv", "%1, '%2'");
     }
     private static void setupCustomerHasBankAccountTable() throws SQLException {
         statement.execute("drop table customerHasBankAccount if exists");
@@ -237,6 +282,8 @@ public class DBLiason {
                 "primary key (customer_id, acct_num), " +
                 "foreign key (customer_id) references customer(ID), " +
                 ");");
+
+        populateTableFromCSV("customerHasBankAccount", "TestData/customerBankAccount.csv", "%1, '%2', '%3'");
     }
     private static void setupCustomerHasCreditCardTable() throws SQLException {
         statement.execute("drop table customerHasCreditCard if exists");
@@ -251,6 +298,8 @@ public class DBLiason {
                 "primary key (customer_id, card_num)," +
                 "foreign key (customer_id) references customer(ID), " +
                 ");");
+
+        populateTableFromCSV("customerHasCreditCard", "TestData/customerCreditCard.csv", "%1, '%2', '%3', '%4', '%5'");
     }
     private static void setupPackageHasSpecialInfoTable() throws SQLException {
         statement.execute("drop table packageHasSpecialInfo if exists");
@@ -262,6 +311,8 @@ public class DBLiason {
                 "foreign key (package_id) references package(ID), " +
                 "foreign key (special_info_id) references specialInfo(ID), " +
                 ");");
+
+        populateTableFromCSV("packageHasSpecialInfo", "TestData/packageSpecialInfo.csv", "%1,'%2'");
     }
 
 
@@ -285,7 +336,8 @@ public class DBLiason {
         String result = formatString;
 
         for(int i = 0; i < values.length; i++) {
-            result = result.replaceFirst( "%" + (i+1), escapeSingleQuotes(values[i]) );
+            while(result.contains("%" + (i+1)))
+                result = result.replaceFirst( "%" + (i+1), escapeSingleQuotes(values[i]) );
         }
 
         return result;
@@ -650,9 +702,9 @@ public class DBLiason {
 
                 "dateadd(second, %4, '1970-01-01'), " + // convert unix time to regular time
                 "null, " +
-                "dateadd(day, %5, dateadd(second, %4, '1970-01-01'))," + // convert unix time to regular time and then add shipping time
+                "dateadd(day, %5, dateadd(second, %4, '1970-01-01')), " + // convert unix time to regular time and then add shipping time
 
-                "%6, " +
+                "'%6', " +
                 "%7, " +
 
                 "%8, " +
@@ -728,7 +780,7 @@ public class DBLiason {
 
         try {
             ResultSet packages = statement.executeQuery("select ID, ship_timestamp from package");
-            prettified = prettifyResultSet( "PackageID #%(d,ID) (shipped at #%(timestamp,ship_timestamp))", packages );
+            prettified = prettifyResultSet( "PackageID #%(d,ID) (shipped at %(timestamp,ship_timestamp))", packages );
             return asLines(prettified);
         } catch(SQLException sqle) {
             sqle.printStackTrace();
@@ -1016,5 +1068,8 @@ public class DBLiason {
         } catch( SQLException sqle ) {
             sqle.printStackTrace();
         }
+
     }
+
+
 }
