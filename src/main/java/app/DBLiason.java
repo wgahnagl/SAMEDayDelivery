@@ -2,6 +2,7 @@
 package app;
 
 
+import javax.xml.transform.Result;
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
@@ -150,9 +151,6 @@ public class DBLiason {
                 String[] values = line.split(",");
 
                 long ship_timestamp = Long.parseLong(values[0]);
-                while(ship_timestamp > 1555223025L) {
-                    ship_timestamp -=   100000000L;
-                }
 
                 int origin_id = Integer.parseInt(values[1]);
                 int dest_id = Integer.parseInt(values[2]);
@@ -235,6 +233,9 @@ public class DBLiason {
                 "foreign key (carrier) references Carrier(id)" +
 
                 ");");
+
+        populateTableFromCSV("Trip", "TestData/trip.csv",
+                "");
     }
     private static void setupCarrierTable() throws SQLException {
         Statement statement = connection.createStatement();
@@ -273,7 +274,6 @@ public class DBLiason {
 
         populateTableFromCSV("SpecialInfo", "TestData/specialInfo.csv", "%1, '%2'");
     }
-
     private static void setupCustomerPhoneTable() throws SQLException {
         Statement statement = connection.createStatement();
 
@@ -289,7 +289,6 @@ public class DBLiason {
 
         populateTableFromCSV("CustomerPhone", "TestData/customerPhone.csv", "%1, '%2'");
     }
-
     private static void setupCustomerBankAccountTable() throws SQLException {
         Statement statement = connection.createStatement();
 
@@ -306,7 +305,6 @@ public class DBLiason {
 
         populateTableFromCSV("CustomerBankAccount", "TestData/customerBankAccount.csv", "%1, '%2', '%3'");
     }
-
     private static void setupCustomerCreditCardTable() throws SQLException {
         Statement statement = connection.createStatement();
 
@@ -342,38 +340,16 @@ public class DBLiason {
 
         populateTableFromCSV("PackageSpecialInfo", "TestData/packageSpecialInfo.csv", "%1,'%2'");
     }
+    private static void setupTripPackageTable() throws SQLException {
+        Statement statement = connection.createStatement();
 
+        statement.execute("drop table TripPackage if exists");
+        statement.execute("create table TripPackage(" +
+                "trip_id int, " +
+                "package_id int" +
+                ");");
 
-    /* Behind-the-scenes utilities, used only privately */
-
-    private static String escapeSingleQuotes(String value) {
-        // H2 needs all instances of ' (one single quote) escaped as '' (two single quotes)
-        return value.replaceAll("'", "''");
-    }
-
-    private static String formatCommand(String formatString, String ... values) {
-        // Apply a format string like "select %2 from customer where first_name = '%1' and id < %3"
-        // to a list of values like "ID", "Evan", "400"
-
-        // The only difference between this command and String.format is that this command filters
-        // all of its arguments through the escapeSingleQuotes method (and, in the future, any other
-        // methods necessary to sanitize an input for entry into the database)
-
-        // Todo: Might want to use varargs, though then I'd need to manually cast args to strings before entering
-
-        String result = formatString;
-
-        for(int i = 0; i < values.length; i++) {
-            // If it's actually inserted as a string and it's null, get rid of surrounding quotes
-            if(values[i] == null)
-                while( result.contains( "'%" + (i+1) + "'") )
-                    result = result.replaceFirst( "'%" + (i+1) + "'", "null" );
-
-            while(result.contains("%" + (i+1)))
-                result = result.replaceFirst( "%" + (i+1), escapeSingleQuotes(values[i]) );
-        }
-
-        return result;
+        populateTableFromCSV("TripPackage", "TestData/tripPackage.csv", "%1,%2");
     }
 
     private static void populateTableFromCSV(String tablename, String filename, String reformat) {
@@ -409,88 +385,58 @@ public class DBLiason {
             sqle.printStackTrace();
         }
     }
-
     private static void populateTableFromCSV(String tablename, String filename) {
         // Two arg-version with no formatting
 
         populateTableFromCSV(tablename, filename, "");
     }
 
-    private static ArrayList<String> prettifyResultSet( String format, ResultSet rs ) throws SQLException {
-        ArrayList<String> formatted = new ArrayList<>();
-        rs.first();
 
-        while(rs.next()) {
-            // Start with an empty row and build it up one char at a time
-            // by consulting the rs and the format string.
+    /* Behind-the-scenes utilities, used only privately */
 
-            String thisRow = "";
-            String formatCopy = format;
+    private static String escapeSingleQuotes(String value) {
+        // H2 needs all instances of ' (one single quote) escaped as '' (two single quotes)
+        return value.replaceAll("'", "''");
+    }
+    private static String formatCommand(String formatString, String ... values) {
+        // Apply a format string like "select %2 from customer where first_name = '%1' and id < %3"
+        // to a list of values like "ID", "Evan", "400"
 
-            while( !formatCopy.equals("") ) {
+        // The only difference between this command and String.format is that this command filters
+        // all of its arguments through the escapeSingleQuotes method (and, in the future, any other
+        // methods necessary to sanitize an input for entry into the database)
 
-                switch( formatCopy.charAt(0) ) {
+        // Todo: Might want to use varargs, though then I'd need to manually cast args to strings before entering
 
-                    // For % signs, insert a value from the table
-                    case '%':
-                        int upTo = formatCopy.indexOf(')'); // Technically this is a bug as "MAX(ID)" is a valid column name
-                        String[] typeVar = formatCopy.substring(2, upTo).split(",");
-                        formatCopy = formatCopy.substring(upTo+1);
+        String result = formatString;
 
-                        switch(typeVar[0].toLowerCase()) {
-                            case "int":
-                            case "d":
-                                thisRow += rs.getInt(typeVar[1]);
-                                break;
+        for(int i = 0; i < values.length; i++) {
+            // If it's actually inserted as a string and it's null, get rid of surrounding quotes
+            if(values[i] == null)
+                while( result.contains( "'%" + (i+1) + "'") )
+                    result = result.replaceFirst( "'%" + (i+1) + "'", "null" );
 
-                            case "str":
-                            case "string":
-                            case "s":
-                                thisRow += rs.getString(typeVar[1]);
-                                break;
-
-                            case "timestamp":
-                                thisRow += rs.getTimestamp(typeVar[1]).toString();
-                                break;
-
-                            default:
-                                throw new RuntimeException("Error inside prettifyResultSet(): Unrecognized type <" + typeVar[0] + ">");
-                        }
-                        break;
-
-                    // Copy the next character literally, no matter what it is
-                    case '\\':
-                        thisRow += formatCopy.charAt(1);
-                        formatCopy = formatCopy.substring(2);
-                        break;
-
-                    default:
-                        thisRow += formatCopy.charAt(0);
-                        formatCopy = formatCopy.substring(1);
-                        break;
-                }
-            }
-
-            formatted.add(thisRow);
+            while(result.contains("%" + (i+1)))
+                result = result.replaceFirst( "%" + (i+1), escapeSingleQuotes(values[i]) );
         }
 
-        return formatted;
+        return result;
     }
 
-    private static String asLines( ArrayList<String> lines ) {
-        if(lines.isEmpty()) return "";
 
-        String result = "";
-        for( String l : lines ) {
-            result += "\n";
-            result += l;
-        }
+    /* executeArbitrarySQL() */
 
-        return result.substring(1);
+    public static void executeArbitrarySQL(String sql) throws SQLException {
+        // This utility, if used at all, will only be accessible to the sysadmin.
+        // I don't know if it's a good idea to have even then. We'll see.
+        // Also, it should probably return a ResultSet. - Evan (24 Mar 2019)
+        Statement statement = connection.createStatement();
+        statement.execute(sql);
     }
 
-    /* Manipulations of the customer table
-     * LOW-LEVEL FUNCTIONS ONLY: LINK UI TO THESE FUNCTIONS WITH CAUTION, IF AT ALL
+
+    /* Manipulations and inspections of the customer table
+     * PRIVATE METHODS ARE FOR INTERNAL USE ONLY. MARK PUBLIC WITH CAUTION.
      */
 
     private static int currentMaxCustomerID() throws SQLException {
@@ -515,10 +461,6 @@ public class DBLiason {
         return result.getInt("ID");
     }
 
-
-    // Todo: Generalize prettyPackageList and prettyCustomerList into prettyResults(ResultSet result, String format)
-    // which will take a string like "Package: %(d,id). Ship time: %(timestamp,ship_time)".
-
     private static int getCustomerByAddr( String addr_line1, String addr_line2, String city, String province, String zipcode, String country ) throws SQLException {
         // Return the ID of the customer with a given address, or -1 if no such customer is found
         // (There should never (?) be more than one customer with the same address)
@@ -541,6 +483,27 @@ public class DBLiason {
         return result.getInt("ID");
     }
 
+    private static int addCustomerByAddr( String addr_line1, String addr_line2,String city, String province, String zipcode, String country ) throws SQLException {
+        // Add a null customer with only an address (no email, password, lastname, or firstname)
+        // Return the ID of the newly-created customer
+        int id = currentMaxCustomerID() + 1;
+
+        String cmdFmt = "insert into customer values (%1, null, null, null, null, '%2', '%3', '%4', '%5', '%6', '%7');";
+        String cmd = formatCommand( cmdFmt, Integer.toString(id), addr_line1, addr_line2, city, province, zipcode, country );
+
+        Statement statement = connection.createStatement();
+        statement.execute( cmd );
+        return id;
+    }
+    private static int ensureAddressExists( String addr_line1, String addr_line2, String city, String province, String zipcode, String country ) throws SQLException {
+        // Make sure there is a customer with the given address (create a null-customer if necessary)
+        // Return the ID of the (possibly-newly-created) customer
+
+        int id = getCustomerByAddr( addr_line1, addr_line2, city, province, zipcode, country );
+        if(id >= 0) return id;
+        return addCustomerByAddr( addr_line1, addr_line2, city, province, zipcode, country );
+    }
+
     public static int addCustomerByInfo( String lastName, String firstName, String email, String password ) throws SQLException {
         // Add a customer with only an email, password, lastname, and firstname
         // Return the ID of the newly-created customer
@@ -554,29 +517,6 @@ public class DBLiason {
         statement.execute( insertCmd );
         return id;
     }
-
-    private static int addCustomerByAddr( String addr_line1, String addr_line2,String city, String province, String zipcode, String country ) throws SQLException {
-        // Add a null customer with only an address (no email, password, lastname, or firstname)
-        // Return the ID of the newly-created customer
-        int id = currentMaxCustomerID() + 1;
-
-        String cmdFmt = "insert into customer values (%1, null, null, null, null, '%2', '%3', '%4', '%5', '%6', '%7');";
-        String cmd = formatCommand( cmdFmt, Integer.toString(id), addr_line1, addr_line2, city, province, zipcode, country );
-
-        Statement statement = connection.createStatement();
-        statement.execute( cmd );
-        return id;
-    }
-
-    private static int ensureAddressExists( String addr_line1, String addr_line2, String city, String province, String zipcode, String country ) throws SQLException {
-        // Make sure there is a customer with the given address (create a null-customer if necessary)
-        // Return the ID of the (possibly-newly-created) customer
-
-        int id = getCustomerByAddr( addr_line1, addr_line2, city, province, zipcode, country );
-        if(id >= 0) return id;
-        return addCustomerByAddr( addr_line1, addr_line2, city, province, zipcode, country );
-    }
-
     public static boolean linkAddress( String email, String addr_line1, String addr_line2, String city, String province, String zipcode, String country ) throws SQLException {
         // Find the customer with the given email and fill in their address as the given address
         // If there exists a null customer with the given address, delete it
@@ -664,8 +604,7 @@ public class DBLiason {
 
         return true;
     }
-
-    private static boolean linkPhoneNumber( String email, String phone_num ) throws SQLException {
+    public static boolean linkPhoneNumber( String email, String phone_num ) throws SQLException {
         // Link a given customer account to a bank account number (this DOES NOT delete any previously-linked phone numbers)
         // Returns true on success, false on failure
 
@@ -681,9 +620,97 @@ public class DBLiason {
         return true;
     }
 
+    public static HashMap<String, String> getAddressForCustomer( String email ) throws SQLException {
+        int id = getCustomerByEmail( email );
+        if(id < 0) return null;
 
-    /* Manipulations of the package table
-     * LOW-LEVEL FUNCTIONS ONLY: LINK UI TO THESE FUNCTIONS WITH CAUTION, IF AT ALL
+        String cmdFmt = "select addr_line1, addr_line2, city, province, zipcode, country from customer where id = %1;";
+        String cmd = formatCommand( cmdFmt, Integer.toString(id) );
+
+        Statement statement = connection.createStatement();
+        ResultSet rs = statement.executeQuery( cmd );
+        rs.first();
+
+        HashMap<String, String> address = new HashMap<String, String>();
+        for(String key : new String[] {"addr_line1", "addr_line2", "city", "province", "zipcode", "country"}) {
+            address.put( key, rs.getString(key) );
+        }
+
+        return address;
+    }
+    public static ArrayList<HashMap<String, String>> getCreditCardsForCustomer( String email ) throws SQLException {
+        int id = getCustomerByEmail( email );
+        if(id < 0) return null;
+
+        String cmdFmt = "select * from CustomerCreditCard where customer_id = %1;";
+        String cmd = formatCommand( cmdFmt, Integer.toString(id) );
+        Statement statement = connection.createStatement();
+        ResultSet rs = statement.executeQuery( cmd );
+
+        ArrayList<HashMap<String, String>> result = new ArrayList<>();
+
+        while (rs.next()) {
+            HashMap<String, String> thisCard = new HashMap<>();
+            for(String attribute : new String[] {"card_num", "card_name", "card_expiration", "card_cvv"})
+                thisCard.put(attribute, rs.getString(attribute));
+            result.add(thisCard);
+        }
+
+        return result;
+    }
+    public static HashMap<String, String> getBankAccountForCustomer( String email ) throws SQLException {
+        int id = getCustomerByEmail( email );
+        if(id < 0) return null;
+
+        String cmdFmt = "select * from CustomerBankAccount where customer_id = %1;";
+        String cmd = formatCommand( cmdFmt, Integer.toString(id) );
+
+        Statement statement = connection.createStatement();
+        ResultSet rs = statement.executeQuery( cmd );
+        if(!rs.first()) return null;
+
+        HashMap<String, String> result = new HashMap<>();
+        for(String attribute : new String[] {"acct_num", "routing_num"})
+            result.put(attribute, rs.getString(attribute));
+
+        return result;
+    }
+    public static ArrayList<String> getPhoneNumbersForCustomer( String email ) throws SQLException {
+        int id = getCustomerByEmail( email );
+        if(id < 0) return null;
+
+        String cmdFmt = "select phone_num from CustomerPhone where customer_id = %1;";
+        String cmd = formatCommand( cmdFmt, Integer.toString(id) );
+        Statement statement = connection.createStatement();
+        ResultSet rs = statement.executeQuery( cmd );
+
+        ArrayList<String> result = new ArrayList<>();
+
+        while(rs.next()) {
+            result.add(rs.getString("phone_num"));
+        }
+
+        return result;
+    }
+    public static boolean checkPassword( String email, String password ) throws SQLException {
+        // Return true if the customer with the given email has the given password
+        // ( Returns false if the password is incorrect or if no such customer exists )
+
+        String cmdFmt = "select ID from customer where email = '%1' and password = '%2';";
+        String cmd = formatCommand( cmdFmt, email, password );
+
+        Statement statement = connection.createStatement();
+        ResultSet rs = statement.executeQuery( cmd );
+
+        if( rs.first() ) // If there exists a customer with this email and password, the password is correct
+            return true;
+
+        return false;
+    }
+
+
+    /* Manipulations and inspections of the package table
+     * PRIVATE METHODS ARE FORE INTERNAL USE ONLY. MARK PUBLIC WITH CAUTION.
      */
 
     private static int currentMaxPackageID() throws SQLException {
@@ -697,7 +724,6 @@ public class DBLiason {
         // Todo: implement this method for real
         return 3;
     }
-
     private static int computePrice( PackageType type, int weight_in_grams, Expediency expediency ) {
         double priceCents = type.basePriceCents; // For example, 500.00 would be **5** dollars (not 500 dollars)
         priceCents *= expediency.priceMultiplier;
@@ -782,11 +808,10 @@ public class DBLiason {
         statement.execute( cmd );
     }
 
-    private static void scanPackage(
+    public static void scanPackage(
             String o_addr_line1, String o_addr_line2, String o_city, String o_province, String o_zipcode, String o_country,
             String d_addr_line1, String d_addr_line2, String d_city, String d_province, String d_zipcode, String d_country,
-            Expediency expediency, PackageType type, int weight_in_grams, boolean receiver_pays, boolean already_paid
-    ) throws SQLException {
+            Expediency expediency, PackageType type, int weight_in_grams, boolean receiver_pays, boolean already_paid) throws SQLException {
         /* There are a lot of fields in the package table. Here's how each of them is filled in:
          *
          *      ID:                     next available id
@@ -825,7 +850,116 @@ public class DBLiason {
         return true;
     }
 
+    public static ArrayList<HashMap<String, String>> getUndeliveredPackagesToCustomer( String email ) throws SQLException {
+        // UNDER CONSTRUCTION
+        int id = getCustomerByEmail( email );
+        if(id < 0) return null;
+
+        String cmdFmt = "select Package.id, Package.ship_timestamp, Package.expected_delivery, Package.delivery_timestamp, " +
+                " Package.type, Package.weight, Package.price, Package.receiver_pays, Package.paid_flag " +
+                " Customer.last_name, Customer_first_name " +
+                " from ( Package join Customer on Package.origin_customer_id = Customer.id ) " +
+                " where Customer.email = '%1';";
+
+        String cmd = formatCommand( cmdFmt, email );
+        Statement statement = connection.createStatement();
+        ResultSet rs = statement.executeQuery( cmd );
+
+        ArrayList<HashMap<String, String>> result = new ArrayList<>();
+
+        while( rs.next() ) {
+            HashMap<String, String> pkg = new HashMap<>();
+            pkg.put("id", Integer.toString(rs.getInt("Package.id")) );
+            pkg.put("ship_timestamp", rs.getTimestamp("Package.ship_timestamp").toString() );
+            pkg.put("expected_delivery", rs.getTimestamp( "Package.expected_delivery").toString() );
+            //pkg.put("delivery_timestamp", rs.get)
+        }
+
+        return null;
+    }
+
+
+    /* Specific query utilities */
+
+    public static ResultSet getLatePackages() throws SQLException {
+        Statement statement = connection.createStatement();
+        return statement.executeQuery("select * from Package where delivery_timestamp is null and expected_delivery < current_timestamp");
+    }
+
+
     /* Methods to get pretty-prints of various tables and subset of tables */
+
+    private static ArrayList<String> prettifyResultSet( String format, ResultSet rs ) throws SQLException {
+        ArrayList<String> formatted = new ArrayList<>();
+        rs.first();
+
+        while(rs.next()) {
+            // Start with an empty row and build it up one char at a time
+            // by consulting the rs and the format string.
+
+            String thisRow = "";
+            String formatCopy = format;
+
+            while( !formatCopy.equals("") ) {
+
+                switch( formatCopy.charAt(0) ) {
+
+                    // For % signs, insert a value from the table
+                    case '%':
+                        int upTo = formatCopy.indexOf(')'); // Technically this is a bug as "MAX(ID)" is a valid column name
+                        String[] typeVar = formatCopy.substring(2, upTo).split(",");
+                        formatCopy = formatCopy.substring(upTo+1);
+
+                        switch(typeVar[0].toLowerCase()) {
+                            case "int":
+                            case "d":
+                                thisRow += rs.getInt(typeVar[1]);
+                                break;
+
+                            case "str":
+                            case "string":
+                            case "s":
+                                thisRow += rs.getString(typeVar[1]);
+                                break;
+
+                            case "timestamp":
+                                thisRow += rs.getTimestamp(typeVar[1]).toString();
+                                break;
+
+                            default:
+                                throw new RuntimeException("Error inside prettifyResultSet(): Unrecognized type <" + typeVar[0] + ">");
+                        }
+                        break;
+
+                    // Copy the next character literally, no matter what it is
+                    case '\\':
+                        thisRow += formatCopy.charAt(1);
+                        formatCopy = formatCopy.substring(2);
+                        break;
+
+                    default:
+                        thisRow += formatCopy.charAt(0);
+                        formatCopy = formatCopy.substring(1);
+                        break;
+                }
+            }
+
+            formatted.add(thisRow);
+        }
+
+        return formatted;
+    }
+    private static String asLines( ArrayList<String> lines ) {
+        if(lines.isEmpty()) return "";
+
+        String result = "";
+        for( String l : lines ) {
+            result += "\n";
+            result += l;
+        }
+
+        return result.substring(1);
+    }
 
     public static String prettyPackageList() {
         // Return a String that is a pretty representation of all the packages in the package table
@@ -849,8 +983,6 @@ public class DBLiason {
         }
     }
 
-
-
     public static String prettyCustomerList() {
         // Return a String of a newline-separated list of all the customers in the DB
 
@@ -866,7 +998,6 @@ public class DBLiason {
             return "<SQL error>";
         }
     }
-
     public static String prettyCustomerAddressList() {
         // Return a String of a newline-separated list of all the customers in the DB and their addresses
 
@@ -883,7 +1014,6 @@ public class DBLiason {
             return "<SQL error>";
         }
     }
-
     public static String prettyEmailPasswordList() {
         // Return a String of a newline-separated list of all email and password combinations
 
@@ -900,111 +1030,6 @@ public class DBLiason {
         }
     }
 
-    /* General-purpose DB-accessing methods.
-     * Use these to implement all the different functionality that is shared between
-     * the graphical UI and the command-line UI.
-     */
-
-    public static void executeArbitrarySQL(String sql) throws SQLException {
-        // This utility, if used at all, will only be accessible to the sysadmin.
-        // I don't know if it's a good idea to have even then. We'll see.
-        // Also, it should probably return a ResultSet. - Evan (24 Mar 2019)
-        Statement statement = connection.createStatement();
-        statement.execute(sql);
-    }
-
-    public static boolean checkPassword( String email, String password ) throws SQLException {
-        // Return true if the customer with the given email has the given password
-        // ( Returns false if the password is incorrect or if no such customer exists )
-
-        String cmdFmt = "select ID from customer where email = '%1' and password = '%2';";
-        String cmd = formatCommand( cmdFmt, email, password );
-
-        Statement statement = connection.createStatement();
-        ResultSet rs = statement.executeQuery( cmd );
-
-        if( rs.first() ) // If there exists a customer with this email and password, the password is correct
-            return true;
-
-        return false;
-    }
-
-    public static HashMap<String, String> getBankAccountForCustomer( String email ) throws SQLException {
-        int id = getCustomerByEmail( email );
-        if(id < 0) return null;
-
-        String cmdFmt = "select * from CustomerBankAccount where customer_id = %1;";
-        String cmd = formatCommand( cmdFmt, Integer.toString(id) );
-
-        Statement statement = connection.createStatement();
-        ResultSet rs = statement.executeQuery( cmd );
-        if(!rs.first()) return null;
-
-        HashMap<String, String> result = new HashMap<>();
-        for(String attribute : new String[] {"acct_num", "routing_num"})
-            result.put(attribute, rs.getString(attribute));
-
-        return result;
-    }
-
-    public static ArrayList<HashMap<String, String>> getCreditCardsForCustomer( String email ) throws SQLException {
-        int id = getCustomerByEmail( email );
-        if(id < 0) return null;
-
-        String cmdFmt = "select * from CustomerCreditCard where customer_id = %1;";
-        String cmd = formatCommand( cmdFmt, Integer.toString(id) );
-        Statement statement = connection.createStatement();
-        ResultSet rs = statement.executeQuery( cmd );
-
-        ArrayList<HashMap<String, String>> result = new ArrayList<>();
-
-        while (rs.next()) {
-            HashMap<String, String> thisCard = new HashMap<>();
-            for(String attribute : new String[] {"card_num", "card_name", "card_expiration", "card_cvv"})
-                thisCard.put(attribute, rs.getString(attribute));
-            result.add(thisCard);
-        }
-
-        return result;
-    }
-
-    public static ArrayList<String> getPhoneNumbersForCustomer( String email ) throws SQLException {
-        int id = getCustomerByEmail( email );
-        if(id < 0) return null;
-
-        String cmdFmt = "select phone_num from CustomerPhone where customer_id = %1;";
-        String cmd = formatCommand( cmdFmt, Integer.toString(id) );
-        Statement statement = connection.createStatement();
-        ResultSet rs = statement.executeQuery( cmd );
-
-        ArrayList<String> result = new ArrayList<>();
-
-        while(rs.next()) {
-            result.add(rs.getString("phone_num"));
-        }
-
-        return result;
-    }
-
-    public static HashMap<String, String> getAddressForCustomer( String email ) throws SQLException {
-        int id = getCustomerByEmail( email );
-        if(id < 0) return null;
-
-        String cmdFmt = "select addr_line1, addr_line2, city, province, zipcode, country from customer where id = %1;";
-        String cmd = formatCommand( cmdFmt, Integer.toString(id) );
-
-        Statement statement = connection.createStatement();
-        ResultSet rs = statement.executeQuery( cmd );
-        rs.first();
-
-        HashMap<String, String> address = new HashMap<String, String>();
-        for(String key : new String[] {"addr_line1", "addr_line2", "city", "province", "zipcode", "country"}) {
-            address.put( key, rs.getString(key) );
-        }
-
-        return address;
-    }
-
     public static HashMap <String ,String> getCustomerName(String email) throws SQLException {
         String cmdFmt = "select first_name, last_name from customer where email = '%1'";
         String cmd = formatCommand( cmdFmt, email );
@@ -1019,13 +1044,6 @@ public class DBLiason {
         }
 
         return name;
-    }
-
-    /* Specific query utilities */
-
-    public static ResultSet getLatePackages() throws SQLException {
-        Statement statement = connection.createStatement();
-        return statement.executeQuery("select * from Package where delivery_timestamp is null and expected_delivery < current_timestamp");
     }
 
 
@@ -1167,6 +1185,4 @@ public class DBLiason {
         }
 
     }
-
-
 }
