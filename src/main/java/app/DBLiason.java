@@ -896,18 +896,20 @@ public class DBLiason {
     public static void main(String[] args) {
         setupDB();
 
-        String first_name = "Evan";
-        String last_name = "Rysdam";
-        String email = "err2315@rit.edu";
-        String password = "evan-is-great";
-        String addr_line1 = "60 Colony Manor Drive";
-        String addr_line2 = "apt 109";
-        String city = "Rochester";
-        String province = "New York";
-        String zipcode = "14623";
-        String country = "USA";
+        // Add Evan Rysdam to the database by adding info first, then address, then linking the two
 
         try {
+            String first_name = "Evan";
+            String last_name = "Rysdam";
+            String email = "err2315@rit.edu";
+            String password = "evan-is-great";
+            String addr_line1 = "60 Colony Manor Drive";
+            String addr_line2 = "apt 109";
+            String city = "Rochester";
+            String province = "New York";
+            String zipcode = "14623";
+            String country = "USA";
+
             addCustomerByInfo(last_name, first_name, email, password);
             addCustomerByAddr(addr_line1, addr_line2, city, province, zipcode, country);
             linkAddress(email, addr_line1, addr_line2, city, province, zipcode, country);
@@ -915,11 +917,17 @@ public class DBLiason {
             sqle.printStackTrace();
         }
 
+        // Print out all packages (none right now)
+
         System.out.println("PACKAGE TABLE PRINTOUT:");
         System.out.println(prettyPackageList());
 
+        // Print out all customers
+
         System.out.println("CUSTOMER TABLE PRINTOUT:");
         System.out.println(prettyCustomerAddressList());
+
+        // Make sure password-checking works
 
         try {
             System.out.println();
@@ -929,6 +937,8 @@ public class DBLiason {
         } catch(SQLException sqle) {
             sqle.printStackTrace();
         }
+
+        // Make sure credit cards, bank accounts, and phone numbers work
 
         try {
             String evan = "err2315@rit.edu";
@@ -957,6 +967,7 @@ public class DBLiason {
             HashMap<String, String> evanAcct = getBankAccountForCustomer( evan );
             HashMap<String, String> desAcct = getBankAccountForCustomer( des );
 
+            HashMap<String, String> evanAddress = getAddressForCustomer( evan );
 
             System.out.println();
             System.out.print("\nEvan's cards:");
@@ -991,9 +1002,11 @@ public class DBLiason {
             sqle.printStackTrace();
         }
 
+        // Make sure addresses work
+
         try {
             System.out.println();
-            HashMap<String, String> evanAddress = getAddressForCustomer( email );
+            HashMap<String, String> evanAddress = getAddressForCustomer( "err2315@rit.edu" );
 
             System.out.println("EVAN'S ADDRESS");
             for( String key : evanAddress.keySet() ) {
