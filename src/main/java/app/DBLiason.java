@@ -235,7 +235,13 @@ public class DBLiason {
                 ");");
 
         populateTableFromCSV("Trip", "TestData/trip.csv",
-                "");
+                "%1, " +
+                        "DATEADD(second, %2, '1970-01-01'), " +
+                        "DATEADD(second, %3, '1970-01-01'), " +
+                        "%4, " +
+                        "%5, " +
+                        "%6, " +
+                        "%7");
     }
     private static void setupCarrierTable() throws SQLException {
         Statement statement = connection.createStatement();

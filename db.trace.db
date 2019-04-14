@@ -1424,3 +1424,44 @@ Caused by: java.lang.IllegalArgumentException: 1555233952
 	at org.h2.util.DateTimeUtils.parseTimestamp(DateTimeUtils.java:460)
 	at org.h2.value.ValueTimestamp.parse(ValueTimestamp.java:145)
 	... 13 more
+2019-04-14 17:13:51 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLException: Cannot parse "TIMESTAMP" constant "1555233952"; SQL statement:
+insert into Trip values (1,1555233952,1555361731,96,53,53,false) -- (1, 1555233952, 1555361731, 96, 53, 53, FALSE) [22007-197]
+	at org.h2.message.DbException.getJdbcSQLException(DbException.java:357)
+	at org.h2.message.DbException.get(DbException.java:168)
+	at org.h2.value.ValueTimestamp.parse(ValueTimestamp.java:147)
+	at org.h2.value.Value.convertTo(Value.java:1071)
+	at org.h2.table.Column.convert(Column.java:177)
+	at org.h2.command.dml.Insert.insertRows(Insert.java:166)
+	at org.h2.command.dml.Insert.update(Insert.java:134)
+	at org.h2.command.CommandContainer.update(CommandContainer.java:102)
+	at org.h2.command.Command.executeUpdate(Command.java:261)
+	at org.h2.jdbc.JdbcStatement.executeInternal(JdbcStatement.java:233)
+	at org.h2.jdbc.JdbcStatement.execute(JdbcStatement.java:205)
+	at app.DBLiason.populateTableFromCSV(DBLiason.java:371)
+	at app.DBLiason.setupTripTable(DBLiason.java:237)
+	at app.DBLiason.setupDB(DBLiason.java:102)
+	at app.DBLiason.main(DBLiason.java:1024)
+Caused by: java.lang.IllegalArgumentException: 1555233952
+	at org.h2.util.DateTimeUtils.parseDateValue(DateTimeUtils.java:345)
+	at org.h2.util.DateTimeUtils.parseTimestamp(DateTimeUtils.java:460)
+	at org.h2.value.ValueTimestamp.parse(ValueTimestamp.java:145)
+	... 12 more
+2019-04-14 17:16:12 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLException: Column count does not match; SQL statement:
+insert into Trip values (1, select DATEADD(second, 1555233952, '1970-01-01'), select DATEADD(second, 1555361731, '1970-01-01'), 96, 53, 53, false); [21002-197]
+	at org.h2.message.DbException.getJdbcSQLException(DbException.java:357)
+	at org.h2.message.DbException.get(DbException.java:179)
+	at org.h2.message.DbException.get(DbException.java:155)
+	at org.h2.message.DbException.get(DbException.java:144)
+	at org.h2.command.dml.Insert.prepare(Insert.java:306)
+	at org.h2.command.Parser.prepareCommand(Parser.java:283)
+	at org.h2.engine.Session.prepareLocal(Session.java:611)
+	at org.h2.engine.Session.prepareCommand(Session.java:549)
+	at org.h2.jdbc.JdbcConnection.prepareCommand(JdbcConnection.java:1247)
+	at org.h2.jdbc.JdbcStatement.executeInternal(JdbcStatement.java:217)
+	at org.h2.jdbc.JdbcStatement.execute(JdbcStatement.java:205)
+	at app.DBLiason.populateTableFromCSV(DBLiason.java:377)
+	at app.DBLiason.setupTripTable(DBLiason.java:237)
+	at app.DBLiason.setupDB(DBLiason.java:102)
+	at app.DBLiason.main(DBLiason.java:1030)
