@@ -235,7 +235,13 @@ public class DBLiason {
                 ");");
 
         populateTableFromCSV("Trip", "TestData/trip.csv",
-                "");
+                "%1, " +
+                        "DATEADD(second, %2, '1970-01-01'), " +
+                        "DATEADD(second, %3, '1970-01-01'), " +
+                        "%4, " +
+                        "%5, " +
+                        "%6, " +
+                        "%7");
     }
     private static void setupCarrierTable() throws SQLException {
         Statement statement = connection.createStatement();
@@ -351,7 +357,6 @@ public class DBLiason {
 
         populateTableFromCSV("TripPackage", "TestData/tripPackage.csv", "%1,%2");
     }
-
     private static void populateTableFromCSV(String tablename, String filename, String reformat) {
         // Helper method to populate a table from a CSV file
         // If reformat parameter is specified, it should look something like "'%1', %2, (%3)"
@@ -569,7 +574,6 @@ public class DBLiason {
 
         return true;
     }
-
     public static boolean linkCreditCard( String email, String card_name, String card_num, String expiration, String cvv ) throws SQLException {
         // Link a given customer account to a given credit card number (this DOES NOT delete previously-linked cards)
         // Returns true on success, false on failure
@@ -691,6 +695,21 @@ public class DBLiason {
         }
 
         return result;
+    }
+    public static HashMap <String ,String> getNameForCustomer(String email) throws SQLException {
+        String cmdFmt = "select first_name, last_name from customer where email = '%1'";
+        String cmd = formatCommand( cmdFmt, email );
+        Statement statement = connection.createStatement();
+
+        ResultSet rs = statement.executeQuery( cmd );
+        rs.first();
+
+        HashMap<String, String> name = new HashMap<String, String>();
+        for(String key : new String[] {"first_name", "last_name"}) {
+            name.put( key, rs.getString(key) );
+        }
+
+        return name;
     }
     public static boolean checkPassword( String email, String password ) throws SQLException {
         // Return true if the customer with the given email has the given password
@@ -850,35 +869,7 @@ public class DBLiason {
         return true;
     }
 
-    public static ArrayList<HashMap<String, String>> getUndeliveredPackagesToCustomer( String email ) throws SQLException {
-        // UNDER CONSTRUCTION
-        int id = getCustomerByEmail( email );
-        if(id < 0) return null;
-
-        String cmdFmt = "select Package.id, Package.ship_timestamp, Package.expected_delivery, Package.delivery_timestamp, " +
-                " Package.type, Package.weight, Package.price, Package.receiver_pays, Package.paid_flag " +
-                " Customer.last_name, Customer_first_name " +
-                " from ( Package join Customer on Package.origin_customer_id = Customer.id ) " +
-                " where Customer.email = '%1';";
-
-        String cmd = formatCommand( cmdFmt, email );
-        Statement statement = connection.createStatement();
-        ResultSet rs = statement.executeQuery( cmd );
-
-        ArrayList<HashMap<String, String>> result = new ArrayList<>();
-
-        while( rs.next() ) {
-            HashMap<String, String> pkg = new HashMap<>();
-            pkg.put("id", Integer.toString(rs.getInt("Package.id")) );
-            pkg.put("ship_timestamp", rs.getTimestamp("Package.ship_timestamp").toString() );
-            pkg.put("expected_delivery", rs.getTimestamp( "Package.expected_delivery").toString() );
-            //pkg.put("delivery_timestamp", rs.get)
-        }
-
-        return null;
-    }
-
-
+    
     /* Specific query utilities */
 
     public static ResultSet getLatePackages() throws SQLException {
@@ -1029,23 +1020,6 @@ public class DBLiason {
             return "<SQL error>";
         }
     }
-
-    public static HashMap <String ,String> getCustomerName(String email) throws SQLException {
-        String cmdFmt = "select first_name, last_name from customer where email = '%1'";
-        String cmd = formatCommand( cmdFmt, email );
-        Statement statement = connection.createStatement();
-
-        ResultSet rs = statement.executeQuery( cmd );
-        rs.first();
-
-        HashMap<String, String> name = new HashMap<String, String>();
-        for(String key : new String[] {"first_name", "last_name"}) {
-            name.put( key, rs.getString(key) );
-        }
-
-        return name;
-    }
-
 
     /* Main method for testing only */
 

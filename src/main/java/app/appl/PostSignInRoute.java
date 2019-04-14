@@ -2,11 +2,9 @@ package app.appl;
 
 import app.DBLiason;
 import app.model.User;
-import app.util.Util;
 import spark.*;
 
 import java.util.HashMap;
-import java.util.Map;
 import java.util.Objects;
 
 public class PostSignInRoute implements Route {
@@ -21,7 +19,7 @@ public class PostSignInRoute implements Route {
         String password = request.queryParams("password");
 
         if(DBLiason.checkPassword(email, password)){
-            HashMap<String, String> names = DBLiason.getCustomerName(email);
+            HashMap<String, String> names = DBLiason.getNameForCustomer(email);
             request.session().attribute("signInError", null);
             request.session().attribute("currentUser", new User(email, names.get("first_name"), names.get("last_name")));
         }else{
