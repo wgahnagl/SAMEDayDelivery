@@ -1041,10 +1041,7 @@ public class DBLiason {
     
     /* Specific query utilities */
 
-    public static ResultSet getLatePackages() throws SQLException {
-        Statement statement = connection.createStatement();
-        return statement.executeQuery("select * from Package where delivery_timestamp is null and expected_delivery < current_timestamp");
-    }
+
 
     public static ArrayList<String> trackPackage( int packageID ) throws SQLException {
         String cmdFmt = "select * from (((Trip join TripPackage on Trip.id = TripPackage.trip_id) " +
