@@ -1412,6 +1412,7 @@ public class DBLiason {
         // Make sure trackPackage() works
 
         try {
+            System.out.println();
             trackPackage(228);
         } catch (SQLException sqle) {
             sqle.printStackTrace();
