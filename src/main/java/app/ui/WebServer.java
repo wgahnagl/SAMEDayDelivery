@@ -21,6 +21,7 @@ public class WebServer {
     public static final String ACCOUNT_URL = "/account";
     public static final String CREATE_LABEL_URL = "create_label";
     public static final String PREPAY_PACKAGE_URL = "prepay_package";
+    public static final String GET_BILLING_URL = "/billing";
 
     public static final String GET_ADDRESS_DATA_URL = "/get_address_data";
     public static final String GET_CREDIT_CARD_DATA_URL = "/get_credit_card_data";
@@ -48,6 +49,7 @@ public class WebServer {
         get(PREPAY_PACKAGE_URL, new GetPrepaidPackageRoute(templateEngine));
         get(CREATE_LABEL_URL, new GetCreateLabelroute(templateEngine));
         get(FORGOT_PASSWORD_URL, new GetPasswordRecoverRoute(templateEngine));
+        get(GET_BILLING_URL, new GetBillingRoute(templateEngine));
 
         get(TRACKING_URL, new GetTrackingRoute(templateEngine));
         get(ACCOUNT_URL, new GetAccountRoute(templateEngine));
