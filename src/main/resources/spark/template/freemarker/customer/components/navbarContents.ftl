@@ -7,3 +7,6 @@
 <li class="nav-item">
     <a class="nav-link" href="/prepay_package">Prepay Package</a>
 </li>
+<li class="nav-item">
+    <a class="nav-link" href="/billing">Billing</a>
+</li>

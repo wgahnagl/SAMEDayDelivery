@@ -31,8 +31,10 @@
                         </form>
                     </div>
                 </div>
+                <input name="receiverPays" value="true" style="display: none">
             </fieldset>
         </form>
     </div>
 </div>
+
 </html>

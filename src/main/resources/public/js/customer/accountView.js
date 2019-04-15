@@ -1,7 +1,6 @@
 $(function(){
     $.get("/get_address_data",
         function(response){
-            console.log(response);
             var address = JSON.parse(response);
             if(response !== "{}"){
                 $('#displayAddress').show();
@@ -26,10 +25,15 @@ $(function(){
 
     $.get("/get_bank_account_data",
         function(response){
-            if(response === "[]"){
-                console.log("no bank data")
+            var bankAccount = JSON.parse(response);
+            if(response !== "null"){
+                $('#displayBankAccount').show();
+                $('#addBankAccount').hide();
             }
-            console.log(response);
+            var acct_num = bankAccount["acct_num"];
+            var routing_num = bankAccount["routing_num"];
+            $('#bankRoutingNum').val(routing_num);
+            $('#bankAccountNumber').val(acct_num);
         }
     );
 
@@ -37,18 +41,39 @@ $(function(){
         function(response){
             var creditCards = JSON.parse(response);
             if(response !== "[]"){
-                $('#displayAddress').show();
-                $('#addAddress').hide();
+                $('#displayCreditCard').show();
+                $('#addCreditCard').hide();
             }
-            console.log(response);
-
-            for(var card in creditCards){
+            creditCards.forEach(function(card){
                 var num = card["card_num"];
                 var name = card["card_name"];
                 var expiration = card["card_expiration"];
                 var cvv = card["card_cvv"];
-            }
 
+                $('#cardsHolder').append(
+                    ' <div class="card"  style="padding: 20px; background-color: dodgerblue; margin-bottom: 20px">\n'+
+                    '           <div class="row">\n' +
+                    '                <div class="col-sm-12">\n' +
+                    '                    <label for="zip">Card Number</label>\n' +
+                    '                    <input type="text" class="form-control" id="cardNumber" readonly value="'+num+'">\n' +
+                    '                </div>\n' +
+                    '            </div>\n' +
+                    '            <div class="row">\n' +
+                    '                <div class="col-sm-3">\n' +
+                    '                    <label for="zip">Expiration</label>\n' +
+                    '                    <input type="text" class="form-control" id="cardExpiration" readonly value="'+expiration+'">\n' +
+                    '                </div>\n' +
+                    '                <div class="col-sm-6">\n' +
+                    '                    <label for="zip">Name</label>\n' +
+                    '                    <input type="text" class="form-control" id="cardName" readonly value="'+name+'">\n' +
+                    '                </div>\n' +
+                    '                <div class="col-sm-3">\n' +
+                    '                    <label for="zip">CVV</label>\n' +
+                    '                    <input type="text" class="form-control" id="cardCVV" readonly value="'+cvv+'">\n' +
+                    '                </div>\n' +
+                    '            </div>' +
+                    '</div>');
+            });
         }
     );
 });

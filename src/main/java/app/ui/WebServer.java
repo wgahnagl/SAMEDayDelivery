@@ -21,12 +21,14 @@ public class WebServer {
     public static final String ACCOUNT_URL = "/account";
     public static final String CREATE_LABEL_URL = "create_label";
     public static final String PREPAY_PACKAGE_URL = "prepay_package";
+    public static final String GET_BILLING_URL = "/billing";
 
     public static final String GET_ADDRESS_DATA_URL = "/get_address_data";
     public static final String GET_CREDIT_CARD_DATA_URL = "/get_credit_card_data";
     public static final String GET_BANK_ACCOUNT_DATA_URL = "get_bank_account_data";
     public static final String GET_TRACKING_DATA_URL = "/get_tracking_data";
     public static final String GET_PACKAGE_DATA_URL = "/get_package_data";
+    public static final String GET_BILLING_DATA_URL = "/get_billing_data";
 
     public static final String ADD_CREDIT_CARD_URL = "/add_credit_card";
     public static final String ADD_ADDRESS_URL  = "/add_address";
@@ -48,6 +50,7 @@ public class WebServer {
         get(PREPAY_PACKAGE_URL, new GetPrepaidPackageRoute(templateEngine));
         get(CREATE_LABEL_URL, new GetCreateLabelroute(templateEngine));
         get(FORGOT_PASSWORD_URL, new GetPasswordRecoverRoute(templateEngine));
+        get(GET_BILLING_URL, new GetBillingRoute(templateEngine));
 
         get(TRACKING_URL, new GetTrackingRoute(templateEngine));
         get(ACCOUNT_URL, new GetAccountRoute(templateEngine));
@@ -60,6 +63,7 @@ public class WebServer {
         get(GET_CREDIT_CARD_DATA_URL, new GetCreditCardDataRoute());
         get(GET_TRACKING_DATA_URL, new GetTrackingDataRoute());
         get(GET_PACKAGE_DATA_URL, new GetPackageDataRoute());
+        get(GET_BILLING_DATA_URL, new GetBillingDataRoute());
 
         post(SIGNIN_URL, new PostSignInRoute(templateEngine));
         post(SIGNUP_URL, new PostSignUpRoute());
