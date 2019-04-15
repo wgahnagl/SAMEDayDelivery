@@ -54,19 +54,23 @@ def prettyTrip(trip):
 	for i in range(1, 7):
 		res += ","
 		res += str(trip[i])
-	return res
+	return res + "\n"
 
 def prettyMove(move):
-	return str(move[0]) + "," + str(move[1])
+	return str(move[0]) + "," + str(move[1]) + "\n"
 	
 
-wh = [Warehouse(i) for i in range(1, 201)]
+wh = [Warehouse(i) for i in range(1, 106)]
+wh[0].packages = [i for i in range(1, 402)]
 
 for i in range(0, 500):
-	start = randint(0, 199)
+	start = randint(0, 104)
+	while 0 == len(wh[start].packages):
+		start = randint(0, 104)
+
 	end = start
 	while end == start:
-		end = randint(0, 199)
+		end = randint(0, 104)
 
 	wh[start].deliverSomePackages(wh[end])
 
