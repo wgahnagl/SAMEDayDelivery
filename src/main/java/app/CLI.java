@@ -1,10 +1,20 @@
 package app;
 
+import java.sql.SQLException;
 import java.util.Scanner;
 
 public class CLI {
     private static boolean adminMode;
     private static Scanner scanner = new Scanner(System.in);
+
+    private static boolean adminCheck() {
+        if( adminMode ) {
+            return true;
+        } else {
+            System.out.println("Sorry, you need to be an admin to do that.");
+            return false;
+        }
+    }
 
     private static void cHelp( ) {
         System.out.println("LIST OF COMMANDS");
@@ -12,6 +22,10 @@ public class CLI {
         System.out.println("quit - Exit the program.");
         System.out.println("adminmode - Enter admin mode (you will be asked for a password -- it's 'password').");
         System.out.println("deliverymode - Leave admin mode.");
+        System.out.println("markdelivered ID - Mark the package with id ID as delivered.");
+
+        System.out.println("packages - (Admin only) See a list of all packages.");
+        System.out.println("customers - (Admin only) See a list of all customers.");
     }
 
     private static void cQuit( ) {
@@ -35,16 +49,43 @@ public class CLI {
         }
     }
 
+    private static void cMarkDelivered( int id ) {
+        try {
+            DBLiason.markDelivered(id);
+            System.out.println("Marked package as delivered.");
+        } catch (SQLException sqle) {
+            System.out.println("Sorry, that caused a database exception!");
+            sqle.printStackTrace();
+        }
+    }
+
+    private static void cPackages( ) {
+        if(!adminCheck()) return;
+        String packages = DBLiason.prettyPackageList();
+        System.out.println(packages);
+    }
+
+    private static void cCustomers( ) {
+        if(!adminCheck()) return;
+        String customers = DBLiason.prettyCustomerAddressList();
+        System.out.println(customers);
+    }
+
     public static void main( String[] args ) {
 
         while(true) {
             System.out.print( adminMode ? " !> " : " > ");
-            String input = scanner.nextLine().toLowerCase();
+            String[] input = scanner.nextLine().toLowerCase().split(" ");
 
-            if(input.equals("quit")) cQuit();
-            else if(input.equals("help")) cHelp();
-            else if(input.equals("adminmode")) cAdminMode();
-            else if(input.equals("deliverymode")) cDeliveryMode();
+            if(input[0].equals("quit")) cQuit();
+            else if(input[0].equals("help")) cHelp();
+            else if(input[0].equals("adminmode")) cAdminMode();
+            else if(input[0].equals("deliverymode")) cDeliveryMode();
+            else if(input[0].equals("markdelivered")) cMarkDelivered( Integer.parseInt(input[1]) );
+
+            else if(input[0].equals("packages")) cPackages();
+            else if(input[0].equals("customers")) cCustomers();
+
             else System.out.println("Sorry, I don't know that command.");
         }
     }

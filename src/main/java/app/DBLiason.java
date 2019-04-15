@@ -1034,14 +1034,22 @@ public class DBLiason {
                 receiver_pays, already_paid);
     }
 
+    public static void markDelivered(int packageID) throws SQLException {
+        long time = System.currentTimeMillis() / 1000;
+
+        String cmdFmt = "update package set delivery_timestamp = dateadd(second, %1, '1970-01-01') where id = %2";
+
+        String cmd = formatCommand( cmdFmt, Long.toString(time), Integer.toString(packageID) );
+        Statement statement = connection.createStatement();
+        statement.executeUpdate( cmd );
+    }
+
     public static boolean createLabel(String email, String address1, String address2, String city, String state, String zip, String country, String expediency, String packageType, String weight){
         return true;
     }
 
     
     /* Specific query utilities */
-
-
 
     public static ArrayList<String> trackPackage( int packageID ) throws SQLException {
         String cmdFmt = "select * from (((Trip join TripPackage on Trip.id = TripPackage.trip_id) " +
@@ -1150,18 +1158,26 @@ public class DBLiason {
     public static String prettyPackageList() {
         // Return a String that is a pretty representation of all the packages in the package table
 
-        ArrayList<String> prettified;
+        ArrayList<String> prettified = new ArrayList<>();
 
         try {
             Statement statement = connection.createStatement();
             ResultSet packages = statement.executeQuery("select * from package");
-            prettified = prettifyResultSet(
-
-                    "PackageID #%(d,ID) from customer #%(d,origin_customer_id) to #%(d,dest_customer_id)\n" +
+            while(packages.next()) {
+                if(packages.getTimestamp("delivery_timestamp") == null) {
+                    prettified.add(prettifyRow(
+                            "PackageID #%(d,ID) from customer #%(d,origin_customer_id) to #%(d,dest_customer_id)\n" +
                             "    Shipped at: %(timestamp,ship_timestamp)\n" +
-                            "    Due at:     %(timestamp,expected_delivery)",
-
-                    packages );
+                            "    Due at:     %(timestamp,expected_delivery) [not delivered]",
+                            packages));
+                } else {
+                    prettified.add(prettifyRow(
+                            "PackageID #%(d,ID) from customer #%(d,origin_customer_id) to #%(d,dest_customer_id)\n" +
+                                    "    Shipped at: %(timestamp,ship_timestamp)\n" +
+                                    "    Due at:     %(timestamp,expected_delivery) [delivered at %(timestamp,delivery_timestamp)]",
+                            packages));
+                }
+            }
             return asLines(prettified);
         } catch(SQLException sqle) {
             sqle.printStackTrace();
