@@ -379,6 +379,10 @@ public class DBLiason {
                 if(!reformat.equals(""))  // If specified, apply the format string
                     line = formatCommand(reformat, line.split(","));
 
+                if(tablename.equals("TripPackage")) {
+                    System.out.println(" >> " + line);
+                }
+
                 statement.execute( String.format( "insert into %s values (%s);", tablename, line) ); // SQLException
             }
 
@@ -1046,12 +1050,30 @@ public class DBLiason {
         return statement.executeQuery("select * from Package where delivery_timestamp is null and expected_delivery < current_timestamp");
     }
 
+    public static ArrayList<String> trackPackage( int packageID ) throws SQLException {
+        String cmdFmt = "select * from (Trip join TripPackage on Trip.id = TripPackage.trip_id) " +
+                " where TripPackage.package_id = %1 " +
+                " order by Trip.start_time ";
+
+        String cmd = formatCommand( cmdFmt, Integer.toString(packageID) );
+        Statement statement = connection.createStatement();
+        ResultSet rs = statement.executeQuery( cmd );
+
+        String pretty = asLines( prettifyResultSet(
+                "Trip #%(d,Trip.id): from %(d,origin) to %(d,destination) [start = %(timestamp,start_time), end = %(timestamp,end_time)]",
+                rs
+        ) );
+
+        System.out.println(pretty);
+
+        return null;
+    }
+
 
     /* Methods to get pretty-prints of various tables and subset of tables */
 
     private static ArrayList<String> prettifyResultSet( String format, ResultSet rs ) throws SQLException {
         ArrayList<String> formatted = new ArrayList<>();
-        rs.first();
 
         while(rs.next()) {
             // Start with an empty row and build it up one char at a time
@@ -1384,6 +1406,14 @@ public class DBLiason {
             payAllUnpaidPackages();
 
         } catch( SQLException sqle ) {
+            sqle.printStackTrace();
+        }
+
+        // Make sure trackPackage() works
+
+        try {
+            trackPackage(228);
+        } catch (SQLException sqle) {
             sqle.printStackTrace();
         }
     }
