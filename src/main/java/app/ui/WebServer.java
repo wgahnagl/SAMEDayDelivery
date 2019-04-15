@@ -28,6 +28,7 @@ public class WebServer {
     public static final String GET_BANK_ACCOUNT_DATA_URL = "get_bank_account_data";
     public static final String GET_TRACKING_DATA_URL = "/get_tracking_data";
     public static final String GET_PACKAGE_DATA_URL = "/get_package_data";
+    public static final String GET_BILLING_DATA_URL = "/get_billing_data";
 
     public static final String ADD_CREDIT_CARD_URL = "/add_credit_card";
     public static final String ADD_ADDRESS_URL  = "/add_address";
@@ -62,6 +63,7 @@ public class WebServer {
         get(GET_CREDIT_CARD_DATA_URL, new GetCreditCardDataRoute());
         get(GET_TRACKING_DATA_URL, new GetTrackingDataRoute());
         get(GET_PACKAGE_DATA_URL, new GetPackageDataRoute());
+        get(GET_BILLING_DATA_URL, new GetBillingDataRoute());
 
         post(SIGNIN_URL, new PostSignInRoute(templateEngine));
         post(SIGNUP_URL, new PostSignUpRoute());

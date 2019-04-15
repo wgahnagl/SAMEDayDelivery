@@ -1399,7 +1399,7 @@ public class DBLiason {
                 System.out.println(p);
             }
 
-            payAllUnpaidPackages();
+//            payAllUnpaidPackages();
 
         } catch( SQLException sqle ) {
             sqle.printStackTrace();

@@ -14,10 +14,10 @@ public class GetBillingDataRoute implements Route {
     @Override
     public Object handle(Request request, Response response) throws Exception {
         User user = request.session().attribute("currentUser");
-        ArrayList<HashMap<String, String>> creditCards = DBLiason.getCreditCardsForCustomer(user.getEmail());
-        request.session().attribute("creditCards", creditCards);
+        ArrayList<HashMap<String, String>> unpaidBills = DBLiason.getUnpaidIncomingPackagesOfCustomer(user.getEmail());
+        request.session().attribute("unpaidBills", unpaidBills);
         response.status(200);
         Gson gson = new Gson();
-        return gson.toJson(creditCards);
+        return gson.toJson(unpaidBills);
     }
 }
