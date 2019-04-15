@@ -26,6 +26,8 @@ public class CLI {
 
         System.out.println("packages - (Admin only) See a list of all packages.");
         System.out.println("customers - (Admin only) See a list of all customers.");
+        System.out.println("lostpackages ID - (Admin only) See a list of packages that would be lost if carried number ID were destroyed in a crash.");
+        System.out.println("execute SQL - (Admin only) Execute an arbitrary bit of SQL code.");
     }
 
     private static void cQuit( ) {
@@ -71,11 +73,33 @@ public class CLI {
         System.out.println(customers);
     }
 
+    private static void cExecute( String cmd ) {
+        if(!adminCheck()) return;
+        System.out.println("Executing: " + cmd);
+
+        try {
+            DBLiason.executeArbitrarySQL( cmd );
+        } catch (SQLException sqle) {
+            sqle.printStackTrace();
+        }
+    }
+
+    private static void cLostPackages( int id ) {
+        if(!adminCheck()) return;
+
+        try {
+            System.out.println(DBLiason.lostPackages(id));
+        } catch (SQLException sqle) {
+            sqle.printStackTrace();
+        }
+    }
+
     public static void main( String[] args ) {
 
         while(true) {
             System.out.print( adminMode ? " !> " : " > ");
-            String[] input = scanner.nextLine().toLowerCase().split(" ");
+            String line = scanner.nextLine();
+            String[] input = line.toLowerCase().split(" ");
 
             if(input[0].equals("quit")) cQuit();
             else if(input[0].equals("help")) cHelp();
@@ -85,6 +109,9 @@ public class CLI {
 
             else if(input[0].equals("packages")) cPackages();
             else if(input[0].equals("customers")) cCustomers();
+            else if(input[0].equals("lostpackages")) cLostPackages( Integer.parseInt(input[1]));
+
+            else if(input[0].equals("execute")) cExecute(line.split(" ", 2)[1]);
 
             else System.out.println("Sorry, I don't know that command.");
         }

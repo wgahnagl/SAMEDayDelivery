@@ -1078,6 +1078,18 @@ public class DBLiason {
         return result;
     }
 
+    public static String lostPackages( int carrierID ) throws SQLException {
+        String cmdFmt = "select origin_customer_id as customer, dest_customer_id as recipient, Package.id as id " +
+                " from ((Trip join TripPackage on Trip.id = TripPackage.trip_id) join Package on Package.id = TripPackage.package_id) as AllTrips " +
+                " where AllTrips.carrier = %1;";
+
+        String cmd = formatCommand( cmdFmt, Integer.toString(carrierID) );
+        Statement statement = connection.createStatement();
+        ResultSet rs = statement.executeQuery( cmd );
+
+        return asLines(prettifyResultSet("%(d,id)", rs));
+    }
+
 
     /* Methods to get pretty-prints of various tables and subset of tables */
 
