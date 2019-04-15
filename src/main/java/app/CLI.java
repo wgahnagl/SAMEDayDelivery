@@ -27,6 +27,7 @@ public class CLI {
         System.out.println("packages - (Admin only) See a list of all packages.");
         System.out.println("customers - (Admin only) See a list of all customers.");
         System.out.println("lostpackages ID - (Admin only) See a list of packages that would be lost if carried number ID were destroyed in a crash.");
+        System.out.println("mostmoney - (Admin only) See the id of the customer who's spent the most money.");
         System.out.println("execute SQL - (Admin only) Execute an arbitrary bit of SQL code.");
     }
 
@@ -94,6 +95,16 @@ public class CLI {
         }
     }
 
+    private static void cMostMoney() {
+        if(!adminCheck()) return;
+
+        try {
+            System.out.println(DBLiason.mostMoneyCustomer());
+        } catch (SQLException sqle) {
+            sqle.printStackTrace();
+        }
+    }
+
     public static void main( String[] args ) {
 
         while(true) {
@@ -110,6 +121,7 @@ public class CLI {
             else if(input[0].equals("packages")) cPackages();
             else if(input[0].equals("customers")) cCustomers();
             else if(input[0].equals("lostpackages")) cLostPackages( Integer.parseInt(input[1]));
+            else if(input[0].equals("mostmoney")) cMostMoney();
 
             else if(input[0].equals("execute")) cExecute(line.split(" ", 2)[1]);
 

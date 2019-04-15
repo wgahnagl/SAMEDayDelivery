@@ -1090,6 +1090,15 @@ public class DBLiason {
         return asLines(prettifyResultSet("%(d,id)", rs));
     }
 
+    public static String mostMoneyCustomer() throws SQLException {
+        String cmd = "select origin_customer_id as customer, sum(price) as max_money from package group by customer order by max_money desc limit 1";
+
+        Statement statement = connection.createStatement();
+        ResultSet rs = statement.executeQuery( cmd );
+
+        return asLines(prettifyResultSet("%(d,customer)", rs));
+    }
+
 
     /* Methods to get pretty-prints of various tables and subset of tables */
 
