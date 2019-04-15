@@ -187,7 +187,7 @@
 1555203020,273,81,two-day,envelope - large,6.901,false,true
 1555600937,396,12,two-day,package - medium,34.879,true,true
 1555437152,312,107,overnight,package - medium,7.267,true,true
-1555197598,5,281,two-day,package - medium,37.277,false,true
+1555197598,5,281,two-day,package - medium,37.277,false,false
 1555518241,61,303,two-day,envelope - small,3.382,true,false
 1555315560,319,154,two-day,package - medium,35.315,false,false
 1555259230,233,136,regular,package - medium,22.646,false,false
@@ -202,7 +202,7 @@
 1555493876,370,21,overnight,package - small,8.615,false,false
 1555264042,255,90,overnight,package - small,14.756,true,false
 1555443630,386,175,two-day,envelope - small,0.159,true,true
-1555780065,293,190,overnight,package - small,5.073,false,false
+1555780065,293,190,overnight,package - small,5.073,false,true
 1555675325,13,312,regular,envelope - large,4.434,false,false
 1555567349,115,391,overnight,package - large,7.418,true,true
 1555558799,131,205,regular,package - small,1.122,false,true
@@ -370,7 +370,7 @@
 1555399242,110,221,overnight,package - small,4.328,false,false
 1555362879,372,170,overnight,package - small,6.886,false,false
 1555369273,239,84,regular,package - small,10.505,true,false
-1555190679,283,5,overnight,envelope - large,3.466,false,false
+1555190679,283,5,overnight,envelope - large,3.466,true,false
 1555383282,34,377,regular,package - medium,31.62,false,false
 1555435219,174,227,two-day,envelope - large,3.493,true,true
 1555551798,131,264,overnight,package - medium,15.019,true,true

@@ -2,6 +2,7 @@
 package app;
 
 
+import javax.swing.plaf.nimbus.State;
 import javax.xml.transform.Result;
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
@@ -109,6 +110,7 @@ public class DBLiason {
             setupCustomerCreditCardTable();
             setupCustomerPhoneTable();
             setupPackageSpecialInfoTable();
+            setupTripPackageTable();
 
         } catch(SQLException sqle) {
             sqle.printStackTrace();
@@ -414,7 +416,7 @@ public class DBLiason {
 
         String result = formatString;
 
-        for(int i = 0; i < values.length; i++) {
+        for(int i = values.length-1; i >= 0; i--) {
             // If it's actually inserted as a string and it's null, get rid of surrounding quotes
             if(values[i] == null)
                 while( result.contains( "'%" + (i+1) + "'") )
@@ -826,6 +828,175 @@ public class DBLiason {
         statement.execute( cmd );
     }
 
+    public static ArrayList<HashMap<String, String>> getUndeliveredPackagesToCustomer( String email ) throws SQLException {
+        // Return a list of all packages that are coming to a given customer but have not yet been delivered
+
+        int id = getCustomerByEmail( email );
+        if(id < 0) return null;
+
+        String cmdFmt = "select Package.id, Package.ship_timestamp, Package.expected_delivery, Package.delivery_timestamp, " +
+                " Package.type, Package.weight, Package.price, Package.receiver_pays, Package.paid_for, " +
+                " Customer.last_name, Customer.first_name " +
+                " from ( Package join Customer on Package.origin_customer_id = Customer.id ) " +
+                " where Package.dest_customer_id = %1 and Package.delivery_timestamp is null;";
+
+        String cmd = formatCommand( cmdFmt, Integer.toString(id) );
+        Statement statement = connection.createStatement();
+        ResultSet rs = statement.executeQuery( cmd );
+
+        ArrayList<HashMap<String, String>> result = new ArrayList<>();
+
+        while( rs.next() ) {
+            HashMap<String, String> pkg = new HashMap<>();
+            pkg.put("id", Integer.toString(rs.getInt("Package.id")) );
+            pkg.put("ship_timestamp", "" + rs.getTimestamp("Package.ship_timestamp") );
+            pkg.put("expected_delivery", "" + rs.getTimestamp( "Package.expected_delivery") );
+            pkg.put("delivery_timestamp", "" + rs.getTimestamp("Package.delivery_timestamp") );
+            pkg.put("type", rs.getString("Package.type") );
+            pkg.put("weight", Double.toString(rs.getDouble("Package.weight")) );
+            pkg.put("price", Double.toString(rs.getDouble("Package.price")) );
+            pkg.put("receiver_pays", Boolean.toString(rs.getBoolean("Package.receiver_pays")) );
+            pkg.put("paid_flag", Boolean.toString(rs.getBoolean("Package.paid_for")) );
+            pkg.put("sender_first_name", rs.getString("Customer.first_name") );
+            pkg.put("sender_last_name", rs.getString("Customer.last_name") );
+
+            result.add(pkg);
+        }
+
+        return result;
+    }
+    public static ArrayList<HashMap<String, String>> getUnpaidIncomingPackagesOfCustomer( String email ) throws SQLException {
+        // Get a list of all packages TO and PAID FOR by a given customer that have not yet been paid for
+
+        int id = getCustomerByEmail( email );
+        if(id < 0) return null;
+
+        String cmdFmt = "select Package.id, Package.ship_timestamp, Package.expected_delivery, Package.delivery_timestamp, " +
+                " Package.type, Package.weight, Package.price, Package.receiver_pays, Package.paid_for, " +
+                " Customer.last_name, Customer.first_name " +
+                " from ( Package join Customer on Package.origin_customer_id = Customer.id ) " + // Need origin cust's info
+                " where Package.dest_customer_id = %1 and Package.receiver_pays = true and Package.paid_for = false;";         // Must match dest cust's id
+
+        String cmd = formatCommand( cmdFmt, Integer.toString(id) );
+        Statement statement = connection.createStatement();
+        ResultSet rs = statement.executeQuery( cmd );
+
+        ArrayList<HashMap<String, String>> result = new ArrayList<>();
+
+        while( rs.next() ) {
+            HashMap<String, String> pkg = new HashMap<>();
+            pkg.put("id", Integer.toString(rs.getInt("Package.id")) );
+            pkg.put("ship_timestamp", "" + rs.getTimestamp("Package.ship_timestamp") );
+            pkg.put("expected_delivery", "" + rs.getTimestamp( "Package.expected_delivery") );
+            pkg.put("delivery_timestamp", "" + rs.getTimestamp("Package.delivery_timestamp") );
+            pkg.put("type", rs.getString("Package.type") );
+            pkg.put("weight", Double.toString(rs.getDouble("Package.weight")) );
+            pkg.put("price", Double.toString(rs.getDouble("Package.price")) );
+            pkg.put("receiver_pays", Boolean.toString(rs.getBoolean("Package.receiver_pays")) );
+            pkg.put("paid_flag", Boolean.toString(rs.getBoolean("Package.paid_for")) );
+            pkg.put("sender_first_name", rs.getString("Customer.first_name") );
+            pkg.put("sender_last_name", rs.getString("Customer.last_name") );
+
+            result.add(pkg);
+        }
+
+        return result;
+    }
+    public static ArrayList<HashMap<String, String>> getUnpaidOutgoingPackagesOfCustomer( String email ) throws SQLException {
+        // Get a list of all packages TO and PAID FOR by a given customer that have not yet been paid for
+
+        int id = getCustomerByEmail( email );
+        if(id < 0) return null;
+
+        String cmdFmt = "select Package.id, Package.ship_timestamp, Package.expected_delivery, Package.delivery_timestamp, " +
+                " Package.type, Package.weight, Package.price, Package.receiver_pays, Package.paid_for, " +
+                " Customer.last_name, Customer.first_name " +
+                " from ( Package join Customer on Package.dest_customer_id = Customer.id ) " + // Need dest cust's info
+                " where Package.origin_customer_id = %1 and Package.receiver_pays = false and Package.paid_for = false;";    // Must match origin cust's id
+
+        String cmd = formatCommand( cmdFmt, Integer.toString(id) );
+        Statement statement = connection.createStatement();
+        ResultSet rs = statement.executeQuery( cmd );
+
+        ArrayList<HashMap<String, String>> result = new ArrayList<>();
+
+        while( rs.next() ) {
+            HashMap<String, String> pkg = new HashMap<>();
+            pkg.put("id", Integer.toString(rs.getInt("Package.id")) );
+            pkg.put("ship_timestamp", "" + rs.getTimestamp("Package.ship_timestamp") );
+            pkg.put("expected_delivery", "" + rs.getTimestamp( "Package.expected_delivery") );
+            pkg.put("delivery_timestamp", "" + rs.getTimestamp("Package.delivery_timestamp") );
+            pkg.put("type", rs.getString("Package.type") );
+            pkg.put("weight", Double.toString(rs.getDouble("Package.weight")) );
+            pkg.put("price", Double.toString(rs.getDouble("Package.price")) );
+            pkg.put("receiver_pays", Boolean.toString(rs.getBoolean("Package.receiver_pays")) );
+            pkg.put("paid_flag", Boolean.toString(rs.getBoolean("Package.paid_for")) );
+            pkg.put("receiver_first_name", rs.getString("Customer.first_name") );
+            pkg.put("receiver_last_name", rs.getString("Customer.last_name") );
+
+            result.add(pkg);
+        }
+
+        return result;
+    }
+    public static double getUnpaidIncomingPackageTotalOfCustomer( String email ) throws SQLException {
+        int id = getCustomerByEmail( email );
+        if(id < 0) return -1;
+
+        String cmdFmt = "select sum(price) from Package " +
+                "where dest_customer_id = %1 and receiver_pays = true and paid_for = false;";
+
+        String cmd = formatCommand( cmdFmt, Integer.toString(id) );
+        Statement statement = connection.createStatement();
+        ResultSet rs = statement.executeQuery( cmd );
+        rs.first();
+
+        return rs.getDouble("SUM(PRICE)");
+    }
+    public static double getUnpaidOutgoingPackageTotalOfCustomer( String email ) throws SQLException {
+        int id = getCustomerByEmail( email );
+        if(id < 0) return -1;
+
+        String cmdFmt = "select sum(price) from Package " +
+                "where origin_customer_id = %1 and receiver_pays = false and paid_for = false;";
+
+        String cmd = formatCommand( cmdFmt, Integer.toString(id) );
+        Statement statement = connection.createStatement();
+        ResultSet rs = statement.executeQuery( cmd );
+        rs.first();
+
+        return rs.getDouble("SUM(PRICE)");
+    }
+    public static boolean payAllUnpaidPackagesOfCustomer( String email ) throws SQLException {
+        int id = getCustomerByEmail( email );
+        if(id < 0) return false;
+
+        double incomingTotal = getUnpaidIncomingPackageTotalOfCustomer( email );
+        double outgoingTotal = getUnpaidOutgoingPackageTotalOfCustomer( email );
+
+        double total = incomingTotal + outgoingTotal;
+
+        String cmdFmt = "update Package set paid_for = true " +
+                "where (origin_customer_id = %1 and receiver_pays = false and paid_for = false)" +
+                "   or (dest_customer_id = %1 and receiver_pays = true and paid_for = false);";
+
+        String cmd = formatCommand( cmdFmt, Integer.toString(id) );
+        Statement statement = connection.createStatement();
+        statement.executeUpdate( cmd );
+
+        System.out.println( String.format("Charged $%.02f to the account of user %s", total, email) );
+        return true;
+    }
+    public static void payAllUnpaidPackages( ) throws SQLException {
+        String cmd = "select email from customer;";
+        Statement statement = connection.createStatement();
+        ResultSet rs = statement.executeQuery( cmd );
+
+        while(rs.next()) {
+            payAllUnpaidPackagesOfCustomer( rs.getString("email") );
+        }
+    }
+
     public static void scanPackage(
             String o_addr_line1, String o_addr_line2, String o_city, String o_province, String o_zipcode, String o_country,
             String d_addr_line1, String d_addr_line2, String d_city, String d_province, String d_zipcode, String d_country,
@@ -1072,6 +1243,7 @@ public class DBLiason {
                     Expediency.TWODAY, PackageType.PACKAGE_LARGE, 12010, false, true
             );
 
+            System.out.println();
             System.out.println("PACKAGE TABLE PRINTOUT:");
             System.out.println(prettyPackageList());
         } catch(SQLException sqle) {
@@ -1081,6 +1253,7 @@ public class DBLiason {
 
         // Print out all customers
 
+        System.out.println();
         System.out.println("CUSTOMER TABLE PRINTOUT:");
         System.out.println(prettyCustomerAddressList());
 
@@ -1127,15 +1300,14 @@ public class DBLiason {
             HashMap<String, String> evanAddress = getAddressForCustomer( evan );
 
             System.out.println();
-            System.out.print("\nEvan's cards:");
+            System.out.print("Evan's cards:");
             for(HashMap<String, String> h : evanCards)
                 System.out.print( String.format(" (%s, %s, %s, %s)",
                         h.get("card_name"), h.get("card_num"),
                         h.get("card_expiration"), h.get("card_cvv")) );
 
-
             System.out.println();
-            System.out.print("\nDes's cards:");
+            System.out.print("Des's cards:");
             for(HashMap<String, String> h : desCards)
                 System.out.print( String.format(" (%s, %s, %s, %s)",
                         h.get("card_name"), h.get("card_num"),
@@ -1174,5 +1346,63 @@ public class DBLiason {
             sqle.printStackTrace();
         }
 
+        // Make sure getUndeliveredPackagesToCustomer() works, then pay all packages and check again
+
+        try {
+            String email = "desiree310@verizon.net";
+            ArrayList<HashMap<String, String>> desIncomingPackages = getUndeliveredPackagesToCustomer( email );
+            ArrayList<HashMap<String, String>> desUnpaidIncomingPackage = getUnpaidIncomingPackagesOfCustomer( email );
+            ArrayList<HashMap<String, String>> desUnpaidOutgoingPackage = getUnpaidOutgoingPackagesOfCustomer( email );
+
+            System.out.println();
+            System.out.println("PACKAGES HEADING TO DES:");
+            for(HashMap<String, String> p : desIncomingPackages) {
+                System.out.println(p);
+            }
+
+            System.out.println();
+            System.out.println("UNPAID PACKAGES HEADING TO DES:");
+            for(HashMap<String, String> p : desUnpaidIncomingPackage) {
+                System.out.println(p);
+            }
+
+            System.out.println();
+            System.out.println("UNPAID PACKAGES SENT BY DES:");
+            for(HashMap<String, String> p : desUnpaidOutgoingPackage) {
+                System.out.println(p);
+            }
+
+
+            System.out.println();
+            payAllUnpaidPackagesOfCustomer( email );
+
+
+            desIncomingPackages = getUndeliveredPackagesToCustomer( email );
+            desUnpaidIncomingPackage = getUnpaidIncomingPackagesOfCustomer( email );
+            desUnpaidOutgoingPackage = getUnpaidOutgoingPackagesOfCustomer( email );
+
+            System.out.println();
+            System.out.println("PACKAGES HEADING TO DES:");
+            for(HashMap<String, String> p : desIncomingPackages) {
+                System.out.println(p);
+            }
+
+            System.out.println();
+            System.out.println("UNPAID PACKAGES HEADING TO DES:");
+            for(HashMap<String, String> p : desUnpaidIncomingPackage) {
+                System.out.println(p);
+            }
+
+            System.out.println();
+            System.out.println("UNPAID PACKAGES SENT BY DES:");
+            for(HashMap<String, String> p : desUnpaidOutgoingPackage) {
+                System.out.println(p);
+            }
+
+            payAllUnpaidPackages();
+
+        } catch( SQLException sqle ) {
+            sqle.printStackTrace();
+        }
     }
 }
