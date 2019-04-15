@@ -1056,73 +1056,107 @@ public class DBLiason {
         return true;
     }
 
+    public static void markDelivered(int packageID) throws SQLException {
+        long time = System.currentTimeMillis() / 1000;
+
+        String cmdFmt = "update package set delivery_timestamp = dateadd(second, %1, '1970-01-01') where id = %2";
+
+        String cmd = formatCommand( cmdFmt, Long.toString(time), Integer.toString(packageID) );
+        Statement statement = connection.createStatement();
+        statement.executeUpdate( cmd );
+    }
+
     
     /* Specific query utilities */
 
-    public static ResultSet getLatePackages() throws SQLException {
+    public static ArrayList<String> trackPackage( int packageID ) throws SQLException {
+        String cmdFmt = "select * from (((Trip join TripPackage on Trip.id = TripPackage.trip_id) " +
+                "                              join Warehouse on Trip.destination = Warehouse.id)" +
+                "                              join Carrier on Trip.carrier = Carrier.id) " +
+                " where TripPackage.package_id = %1 " +
+                " order by Trip.start_time ";
+
+        String cmd = formatCommand( cmdFmt, Integer.toString(packageID) );
         Statement statement = connection.createStatement();
-        return statement.executeQuery("select * from Package where delivery_timestamp is null and expected_delivery < current_timestamp");
+        ResultSet rs = statement.executeQuery( cmd );
+
+        ArrayList<String> result = new ArrayList<>();
+
+        while(rs.next()) {
+            if(rs.getTimestamp("Trip.end_time") != null)
+                result.add(prettifyRow(
+                        "Arrived in %(s,Warehouse.city),%(s,Warehouse.province) [%(s,Warehouse.country)] on %(timestamp,Trip.end_time)",
+                        rs));
+            else
+                result.add(prettifyRow(
+                        "Currently heading towards %(s,Warehouse.city),%(s,Warehouse.province) [%(s,Warehouse.country)] on a %(s,Carrier.type)",
+                        rs));
+        }
+
+        return result;
     }
 
 
     /* Methods to get pretty-prints of various tables and subset of tables */
 
+    private static String prettifyRow( String format, ResultSet rs ) throws SQLException {
+        // Start with an empty row and build it up one char at a time
+        // by consulting the rs and the format string.
+
+        String thisRow = "";
+        String formatCopy = format;
+
+        while( !formatCopy.equals("") ) {
+
+            switch( formatCopy.charAt(0) ) {
+
+                // For % signs, insert a value from the table
+                case '%':
+                    int upTo = formatCopy.indexOf(')'); // Technically this is a bug as "MAX(ID)" is a valid column name
+                    String[] typeVar = formatCopy.substring(2, upTo).split(",");
+                    formatCopy = formatCopy.substring(upTo+1);
+
+                    switch(typeVar[0].toLowerCase()) {
+                        case "int":
+                        case "d":
+                            thisRow += rs.getInt(typeVar[1]);
+                            break;
+
+                        case "str":
+                        case "string":
+                        case "s":
+                            thisRow += rs.getString(typeVar[1]);
+                            break;
+
+                        case "timestamp":
+                            thisRow += rs.getTimestamp(typeVar[1]).toString();
+                            break;
+
+                        default:
+                            throw new RuntimeException("Error inside prettifyResultSet(): Unrecognized type <" + typeVar[0] + ">");
+                    }
+                    break;
+
+                // Copy the next character literally, no matter what it is
+                case '\\':
+                    thisRow += formatCopy.charAt(1);
+                    formatCopy = formatCopy.substring(2);
+                    break;
+
+                default:
+                    thisRow += formatCopy.charAt(0);
+                    formatCopy = formatCopy.substring(1);
+                    break;
+            }
+        }
+
+        return thisRow;
+    }
     private static ArrayList<String> prettifyResultSet( String format, ResultSet rs ) throws SQLException {
         ArrayList<String> formatted = new ArrayList<>();
-        rs.first();
 
         while(rs.next()) {
-            // Start with an empty row and build it up one char at a time
-            // by consulting the rs and the format string.
-
-            String thisRow = "";
-            String formatCopy = format;
-
-            while( !formatCopy.equals("") ) {
-
-                switch( formatCopy.charAt(0) ) {
-
-                    // For % signs, insert a value from the table
-                    case '%':
-                        int upTo = formatCopy.indexOf(')'); // Technically this is a bug as "MAX(ID)" is a valid column name
-                        String[] typeVar = formatCopy.substring(2, upTo).split(",");
-                        formatCopy = formatCopy.substring(upTo+1);
-
-                        switch(typeVar[0].toLowerCase()) {
-                            case "int":
-                            case "d":
-                                thisRow += rs.getInt(typeVar[1]);
-                                break;
-
-                            case "str":
-                            case "string":
-                            case "s":
-                                thisRow += rs.getString(typeVar[1]);
-                                break;
-
-                            case "timestamp":
-                                thisRow += rs.getTimestamp(typeVar[1]).toString();
-                                break;
-
-                            default:
-                                throw new RuntimeException("Error inside prettifyResultSet(): Unrecognized type <" + typeVar[0] + ">");
-                        }
-                        break;
-
-                    // Copy the next character literally, no matter what it is
-                    case '\\':
-                        thisRow += formatCopy.charAt(1);
-                        formatCopy = formatCopy.substring(2);
-                        break;
-
-                    default:
-                        thisRow += formatCopy.charAt(0);
-                        formatCopy = formatCopy.substring(1);
-                        break;
-                }
-            }
-
-            formatted.add(thisRow);
+            formatted.add(prettifyRow(format, rs));
         }
 
         return formatted;
@@ -1142,18 +1176,26 @@ public class DBLiason {
     public static String prettyPackageList() {
         // Return a String that is a pretty representation of all the packages in the package table
 
-        ArrayList<String> prettified;
+        ArrayList<String> prettified = new ArrayList<>();
 
         try {
             Statement statement = connection.createStatement();
             ResultSet packages = statement.executeQuery("select * from package");
-            prettified = prettifyResultSet(
-
-                    "PackageID #%(d,ID) from customer #%(d,origin_customer_id) to #%(d,dest_customer_id)\n" +
+            while(packages.next()) {
+                if(packages.getTimestamp("delivery_timestamp") == null) {
+                    prettified.add(prettifyRow(
+                            "PackageID #%(d,ID) from customer #%(d,origin_customer_id) to #%(d,dest_customer_id)\n" +
                             "    Shipped at: %(timestamp,ship_timestamp)\n" +
-                            "    Due at:     %(timestamp,expected_delivery)",
-
-                    packages );
+                            "    Due at:     %(timestamp,expected_delivery) [not delivered]",
+                            packages));
+                } else {
+                    prettified.add(prettifyRow(
+                            "PackageID #%(d,ID) from customer #%(d,origin_customer_id) to #%(d,dest_customer_id)\n" +
+                                    "    Shipped at: %(timestamp,ship_timestamp)\n" +
+                                    "    Due at:     %(timestamp,expected_delivery) [delivered at %(timestamp,delivery_timestamp)]",
+                            packages));
+                }
+            }
             return asLines(prettified);
         } catch(SQLException sqle) {
             sqle.printStackTrace();
@@ -1372,9 +1414,8 @@ public class DBLiason {
                 System.out.println(p);
             }
 
-
             System.out.println();
-            payAllUnpaidPackagesOfCustomer( email );
+//            payAllUnpaidPackagesOfCustomer( email );
 
 
             desIncomingPackages = getUndeliveredPackagesToCustomer( email );
@@ -1402,6 +1443,15 @@ public class DBLiason {
 //            payAllUnpaidPackages();
 
         } catch( SQLException sqle ) {
+            sqle.printStackTrace();
+        }
+
+        // Make sure trackPackage() works
+
+        try {
+            System.out.println();
+            System.out.println(asLines(trackPackage(62))); // 62 for in-progress, 200 for at warehouse
+        } catch (SQLException sqle) {
             sqle.printStackTrace();
         }
     }

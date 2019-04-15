@@ -5,9 +5,8 @@
     <div class="container">
         <h1 class="display-4">Billing</h1>
         <div id="displayBills" style="display: none">
-            <p class="lead">
-            <div class="row" id="bills">
-            </div>
+            <p class="lead" id="bills">
+
             </p>
         </div>
         <div id="noBills">
