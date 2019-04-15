@@ -379,10 +379,6 @@ public class DBLiason {
                 if(!reformat.equals(""))  // If specified, apply the format string
                     line = formatCommand(reformat, line.split(","));
 
-                if(tablename.equals("TripPackage")) {
-                    System.out.println(" >> " + line);
-                }
-
                 statement.execute( String.format( "insert into %s values (%s);", tablename, line) ); // SQLException
             }
 
@@ -1051,7 +1047,9 @@ public class DBLiason {
     }
 
     public static ArrayList<String> trackPackage( int packageID ) throws SQLException {
-        String cmdFmt = "select * from (Trip join TripPackage on Trip.id = TripPackage.trip_id) " +
+        String cmdFmt = "select * from (((Trip join TripPackage on Trip.id = TripPackage.trip_id) " +
+                "                              join Warehouse on Trip.destination = Warehouse.id)" +
+                "                              join Carrier on Trip.carrier = Carrier.id) " +
                 " where TripPackage.package_id = %1 " +
                 " order by Trip.start_time ";
 
@@ -1059,74 +1057,83 @@ public class DBLiason {
         Statement statement = connection.createStatement();
         ResultSet rs = statement.executeQuery( cmd );
 
-        String pretty = asLines( prettifyResultSet(
-                "Trip #%(d,Trip.id): from %(d,origin) to %(d,destination) [start = %(timestamp,start_time), end = %(timestamp,end_time)]",
-                rs
-        ) );
+        ArrayList<String> result = new ArrayList<>();
 
-        System.out.println(pretty);
+        while(rs.next()) {
+            if(rs.getTimestamp("Trip.end_time") != null)
+                result.add(prettifyRow(
+                        "Arrived in %(s,Warehouse.city),%(s,Warehouse.province) [%(s,Warehouse.country)] on %(timestamp,Trip.end_time)",
+                        rs));
+            else
+                result.add(prettifyRow(
+                        "Currently heading towards %(s,Warehouse.city),%(s,Warehouse.province) [%(s,Warehouse.country)] on a %(s,Carrier.type)",
+                        rs));
+        }
 
-        return null;
+        return result;
     }
 
 
     /* Methods to get pretty-prints of various tables and subset of tables */
 
+    private static String prettifyRow( String format, ResultSet rs ) throws SQLException {
+        // Start with an empty row and build it up one char at a time
+        // by consulting the rs and the format string.
+
+        String thisRow = "";
+        String formatCopy = format;
+
+        while( !formatCopy.equals("") ) {
+
+            switch( formatCopy.charAt(0) ) {
+
+                // For % signs, insert a value from the table
+                case '%':
+                    int upTo = formatCopy.indexOf(')'); // Technically this is a bug as "MAX(ID)" is a valid column name
+                    String[] typeVar = formatCopy.substring(2, upTo).split(",");
+                    formatCopy = formatCopy.substring(upTo+1);
+
+                    switch(typeVar[0].toLowerCase()) {
+                        case "int":
+                        case "d":
+                            thisRow += rs.getInt(typeVar[1]);
+                            break;
+
+                        case "str":
+                        case "string":
+                        case "s":
+                            thisRow += rs.getString(typeVar[1]);
+                            break;
+
+                        case "timestamp":
+                            thisRow += rs.getTimestamp(typeVar[1]).toString();
+                            break;
+
+                        default:
+                            throw new RuntimeException("Error inside prettifyResultSet(): Unrecognized type <" + typeVar[0] + ">");
+                    }
+                    break;
+
+                // Copy the next character literally, no matter what it is
+                case '\\':
+                    thisRow += formatCopy.charAt(1);
+                    formatCopy = formatCopy.substring(2);
+                    break;
+
+                default:
+                    thisRow += formatCopy.charAt(0);
+                    formatCopy = formatCopy.substring(1);
+                    break;
+            }
+        }
+
+        return thisRow;
+    }
     private static ArrayList<String> prettifyResultSet( String format, ResultSet rs ) throws SQLException {
         ArrayList<String> formatted = new ArrayList<>();
 
         while(rs.next()) {
-            // Start with an empty row and build it up one char at a time
-            // by consulting the rs and the format string.
-
-            String thisRow = "";
-            String formatCopy = format;
-
-            while( !formatCopy.equals("") ) {
-
-                switch( formatCopy.charAt(0) ) {
-
-                    // For % signs, insert a value from the table
-                    case '%':
-                        int upTo = formatCopy.indexOf(')'); // Technically this is a bug as "MAX(ID)" is a valid column name
-                        String[] typeVar = formatCopy.substring(2, upTo).split(",");
-                        formatCopy = formatCopy.substring(upTo+1);
-
-                        switch(typeVar[0].toLowerCase()) {
-                            case "int":
-                            case "d":
-                                thisRow += rs.getInt(typeVar[1]);
-                                break;
-
-                            case "str":
-                            case "string":
-                            case "s":
-                                thisRow += rs.getString(typeVar[1]);
-                                break;
-
-                            case "timestamp":
-                                thisRow += rs.getTimestamp(typeVar[1]).toString();
-                                break;
-
-                            default:
-                                throw new RuntimeException("Error inside prettifyResultSet(): Unrecognized type <" + typeVar[0] + ">");
-                        }
-                        break;
-
-                    // Copy the next character literally, no matter what it is
-                    case '\\':
-                        thisRow += formatCopy.charAt(1);
-                        formatCopy = formatCopy.substring(2);
-                        break;
-
-                    default:
-                        thisRow += formatCopy.charAt(0);
-                        formatCopy = formatCopy.substring(1);
-                        break;
-                }
-            }
-
-            formatted.add(thisRow);
+            formatted.add(prettifyRow(format, rs));
         }
 
         return formatted;
@@ -1413,7 +1420,7 @@ public class DBLiason {
 
         try {
             System.out.println();
-            trackPackage(228);
+            System.out.println(asLines(trackPackage(62))); // 62 for in-progress, 200 for at warehouse
         } catch (SQLException sqle) {
             sqle.printStackTrace();
         }
